@@ -5,8 +5,8 @@ import {
   addDays,
   formatTimer,
   getCycleWeek,
-  getDayIndex,
-  getMonday,
+  getProgramDayIndex,
+  getProgramWeekStart,
   parseDateKey,
   toLocalDateKey,
 } from "../lib/workout-utils.mjs";
@@ -30,11 +30,12 @@ const emptyLog: WorkoutLog = {
   place: "",
 };
 
-const dayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+const DEFAULT_PROGRAM_START = "2026-07-28";
 const monthFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
 });
+const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "short" });
 const fullDateFormatter = new Intl.DateTimeFormat("en", {
   weekday: "long",
   month: "long",
@@ -60,14 +61,18 @@ export default function Home() {
     const timer = window.setTimeout(() => {
       const today = toLocalDateKey(new Date());
       setSelectedDate(today);
-      setProgramStart(getMonday(today));
+      setProgramStart(DEFAULT_PROGRAM_START);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
-  const dayIndex = selectedDate ? getDayIndex(selectedDate) : 1;
+  const dayIndex =
+    selectedDate && programStart ? getProgramDayIndex(programStart, selectedDate) : 1;
   const day = workoutDays[dayIndex - 1];
-  const weekStart = selectedDate ? getMonday(selectedDate) : "";
+  const weekStart =
+    selectedDate && programStart
+      ? getProgramWeekStart(programStart, selectedDate)
+      : "";
   const cycleWeek =
     selectedDate && programStart ? getCycleWeek(programStart, selectedDate) : 1;
   const guidance = weekGuidance[cycleWeek - 1];
@@ -200,10 +205,16 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, [timerRunning]);
 
-  const completedExercises = day.exercises.filter(
+  const activeExercises = day.exercises.filter(
+    (exercise) => !exercise.startsAfter || selectedDate > exercise.startsAfter,
+  );
+  const completedExercises = activeExercises.filter(
     (exercise) => log.exerciseState[exercise.id],
   ).length;
-  const progress = Math.round((completedExercises / day.exercises.length) * 100);
+  const progress = activeExercises.length
+    ? Math.round((completedExercises / activeExercises.length) * 100)
+    : 0;
+  const timerProgress = timerDuration > 0 ? (remaining / timerDuration) * 360 : 0;
   const selectedDateLabel = selectedDate
     ? fullDateFormatter.format(parseDateKey(selectedDate))
     : "Loading today";
@@ -249,7 +260,7 @@ export default function Home() {
           <span>{weeklyCompleted.size}/7 logged</span>
         </div>
         <div className="day-picker">
-          {weekDates.map((date, index) => {
+          {weekDates.map((date) => {
             const isSelected = date === selectedDate;
             const isDone = weeklyCompleted.has(date);
             return (
@@ -260,7 +271,7 @@ export default function Home() {
                 aria-pressed={isSelected}
                 type="button"
               >
-                <span>{dayNames[index]}</span>
+                <span>{weekdayFormatter.format(parseDateKey(date)).toUpperCase()}</span>
                 <strong>{parseDateKey(date).getDate()}</strong>
                 <i aria-hidden="true">{isDone ? "✓" : ""}</i>
               </button>
@@ -321,13 +332,19 @@ export default function Home() {
           <div className={`exercise-list ${loadState !== "ready" ? "muted" : ""}`}>
             {day.exercises.map((exercise, index) => {
               const checked = Boolean(log.exerciseState[exercise.id]);
+              const deferred = Boolean(
+                exercise.startsAfter && selectedDate <= exercise.startsAfter,
+              );
               return (
-                <article className={`exercise-card ${checked ? "checked" : ""}`} key={exercise.id}>
+                <article
+                  className={`exercise-card ${checked ? "checked" : ""} ${deferred ? "deferred" : ""}`}
+                  key={exercise.id}
+                >
                   <button
                     className="exercise-check"
                     type="button"
                     onClick={() => toggleExercise(exercise.id)}
-                    disabled={loadState !== "ready"}
+                    disabled={loadState !== "ready" || deferred}
                     aria-pressed={checked}
                     aria-label={`${checked ? "Mark incomplete" : "Mark complete"}: ${exercise.name}`}
                   >
@@ -337,11 +354,12 @@ export default function Home() {
                     <div className="exercise-title-row">
                       <h3>{exercise.name}</h3>
                       {exercise.optional && <span className="optional-tag">OPTIONAL</span>}
+                      {deferred && <span className="optional-tag next-tag">NEXT DAY 1</span>}
                     </div>
                     <strong>{exercise.prescription}</strong>
                     <p>{exercise.cue}</p>
                     <div className="exercise-actions">
-                      {exercise.restSeconds && (
+                      {exercise.restSeconds && !deferred && (
                         <button type="button" onClick={() => startRest(exercise.restSeconds!)}>
                           Start {exercise.restSeconds}s rest
                         </button>
@@ -594,50 +612,59 @@ export default function Home() {
       </footer>
 
       <section className={`timer-dock ${timerRunning ? "running" : ""}`} aria-label="Rest timer">
-        <div className="timer-readout">
-          <span>REST</span>
-          <strong>{formatTimer(remaining)}</strong>
+        <div
+          className="timer-orbit"
+          style={{ "--timer-progress": `${timerProgress}deg` } as React.CSSProperties}
+        >
+          <div className="timer-readout">
+            <span>REST</span>
+            <strong>{formatTimer(remaining)}</strong>
+          </div>
         </div>
-        <div className="timer-presets" aria-label="Timer presets">
-          {[60, 90, 120].map((seconds) => (
+        <div className="timer-tools">
+          <div className="timer-presets" aria-label="Timer presets">
+            {[60, 90, 120].map((seconds) => (
+              <button
+                type="button"
+                key={seconds}
+                className={timerDuration === seconds ? "selected" : ""}
+                onClick={() => {
+                  setTimerDuration(seconds);
+                  setRemaining(seconds);
+                  setTimerRunning(false);
+                  setTimerNotice("");
+                }}
+              >
+                {seconds}s
+              </button>
+            ))}
+          </div>
+          <div className="timer-actions">
             <button
+              className="timer-control"
               type="button"
-              key={seconds}
-              className={timerDuration === seconds ? "selected" : ""}
               onClick={() => {
-                setTimerDuration(seconds);
-                setRemaining(seconds);
-                setTimerRunning(false);
+                if (remaining === 0) setRemaining(timerDuration);
+                setTimerRunning((current) => !current);
                 setTimerNotice("");
               }}
             >
-              {seconds}s
+              {timerRunning ? "Pause" : remaining === 0 ? "Again" : "Start"}
             </button>
-          ))}
+            <button
+              className="timer-reset"
+              type="button"
+              onClick={() => {
+                setTimerRunning(false);
+                setRemaining(timerDuration);
+                setTimerNotice("");
+              }}
+              aria-label="Reset timer"
+            >
+              ↺
+            </button>
+          </div>
         </div>
-        <button
-          className="timer-control"
-          type="button"
-          onClick={() => {
-            if (remaining === 0) setRemaining(timerDuration);
-            setTimerRunning((current) => !current);
-            setTimerNotice("");
-          }}
-        >
-          {timerRunning ? "Pause" : remaining === 0 ? "Again" : "Start"}
-        </button>
-        <button
-          className="timer-reset"
-          type="button"
-          onClick={() => {
-            setTimerRunning(false);
-            setRemaining(timerDuration);
-            setTimerNotice("");
-          }}
-          aria-label="Reset timer"
-        >
-          ↺
-        </button>
         <span className="sr-only" aria-live="assertive">{timerNotice}</span>
       </section>
     </main>

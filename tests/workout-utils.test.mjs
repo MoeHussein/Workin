@@ -6,6 +6,8 @@ import {
   getCycleWeek,
   getDayIndex,
   getMonday,
+  getProgramDayIndex,
+  getProgramWeekStart,
   parseDateKey,
 } from "../lib/workout-utils.mjs";
 
@@ -14,6 +16,14 @@ test("maps calendar dates to the Monday-first workout week", () => {
   assert.equal(getMonday("2026-08-02"), "2026-07-27");
   assert.equal(getDayIndex("2026-07-27"), 1);
   assert.equal(getDayIndex("2026-08-02"), 7);
+});
+
+test("anchors the personal program week to Tuesday", () => {
+  assert.equal(getProgramDayIndex("2026-07-28", "2026-07-28"), 1);
+  assert.equal(getProgramDayIndex("2026-07-28", "2026-08-03"), 7);
+  assert.equal(getProgramDayIndex("2026-07-28", "2026-08-04"), 1);
+  assert.equal(getProgramWeekStart("2026-07-28", "2026-08-03"), "2026-07-28");
+  assert.equal(getProgramWeekStart("2026-07-28", "2026-08-04"), "2026-08-04");
 });
 
 test("handles month boundaries and the repeating four-week cycle", () => {

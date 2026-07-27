@@ -415,6 +415,15 @@ a {
   opacity: 0.52;
 }
 
+.exercise-card.deferred {
+  opacity: 0.64;
+}
+
+.exercise-card.deferred .exercise-check {
+  border-style: dashed;
+  cursor: default;
+}
+
 .exercise-check {
   width: 48px;
   height: 48px;
@@ -458,6 +467,11 @@ a {
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.next-tag {
+  background: var(--signal);
+  color: var(--ink);
 }
 
 .exercise-main > strong {
@@ -942,9 +956,9 @@ footer a {
 }
 
 .timer-dock {
-  width: min(620px, calc(100vw - 24px));
-  min-height: 72px;
-  padding: 10px 12px 10px 18px;
+  width: min(480px, calc(100vw - 24px));
+  min-height: 112px;
+  padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(20, 21, 19, 0.96);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
@@ -955,8 +969,8 @@ footer a {
   bottom: 14px;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 110px 1fr auto auto;
-  gap: 10px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
   backdrop-filter: blur(12px);
 }
@@ -965,10 +979,34 @@ footer a {
   border-color: rgba(217, 255, 67, 0.72);
 }
 
+.timer-orbit {
+  --timer-progress: 360deg;
+  width: 86px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--signal) var(--timer-progress),
+    rgba(255, 255, 255, 0.12) 0
+  );
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.timer-orbit::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
 .timer-readout {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
 }
 
 .timer-readout span {
@@ -979,8 +1017,13 @@ footer a {
 }
 
 .timer-readout strong {
-  font-size: 24px;
+  font-size: 22px;
   letter-spacing: -0.04em;
+}
+
+.timer-tools {
+  display: grid;
+  gap: 7px;
 }
 
 .timer-presets {
@@ -1007,7 +1050,7 @@ footer a {
 }
 
 .timer-control {
-  min-width: 78px;
+  min-width: 100px;
   padding: 0 16px;
   border-color: var(--signal);
   background: var(--signal);
@@ -1017,6 +1060,12 @@ footer a {
 .timer-reset {
   width: 42px;
   font-size: 18px;
+}
+
+.timer-actions {
+  display: grid;
+  grid-template-columns: 1fr 42px;
+  gap: 6px;
 }
 
 .sr-only {
@@ -1205,27 +1254,17 @@ footer a {
   }
 
   .timer-dock {
-    min-height: 112px;
-    grid-template-columns: 1fr auto auto;
+    width: min(430px, calc(100vw - 20px));
+    min-height: 118px;
+    grid-template-columns: 92px minmax(0, 1fr);
   }
 
-  .timer-readout {
-    grid-column: 1;
+  .timer-orbit {
+    width: 90px;
   }
 
   .timer-presets {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .timer-control {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .timer-reset {
-    grid-column: 3;
-    grid-row: 1;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

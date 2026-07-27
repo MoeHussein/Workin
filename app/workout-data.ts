@@ -6,6 +6,7 @@ export type Exercise = {
   cue: string;
   optional?: boolean;
   demoUrl?: string;
+  startsAfter?: string;
 };
 
 export type WorkoutDay = {
@@ -24,10 +25,10 @@ export const workoutDays: WorkoutDay[] = [
     day: 1,
     title: "Strength A",
     eyebrow: "Pull · push · legs",
-    duration: "45–55 min",
+    duration: "50–60 min",
     intensity: "Leave 2 reps in reserve",
     summary:
-      "Full-body work with clean assisted pull-up volume and enough recovery to improve.",
+      "Every major movement pattern, with clean assisted pull-up volume and enough recovery to improve.",
     strengthDay: true,
     exercises: [
       {
@@ -58,6 +59,14 @@ export const workoutDays: WorkoutDay[] = [
         restSeconds: 90,
         cue: "Use a stable rear-foot support. Keep the front foot fully planted.",
         demoUrl: "https://www.youtube.com/watch?v=-4LVK1crLSw",
+      },
+      {
+        id: "a-hinge",
+        name: "Band Romanian deadlift",
+        prescription: "3 × 10–15",
+        restSeconds: 90,
+        cue: "Added after your first-session review to cover the missing hip hinge. Start on your next Day 1; push the hips back with a neutral trunk and keep about 2 reps in reserve.",
+        startsAfter: "2026-07-28",
       },
       {
         id: "a-row",
