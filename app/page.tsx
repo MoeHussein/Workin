@@ -1,0 +1,645 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  addDays,
+  formatTimer,
+  getCycleWeek,
+  getDayIndex,
+  getMonday,
+  parseDateKey,
+  toLocalDateKey,
+} from "../lib/workout-utils.mjs";
+import { weekGuidance, workoutDays } from "./workout-data";
+
+type ExerciseState = Record<string, boolean>;
+
+type WorkoutLog = {
+  completed: boolean;
+  energy: number | null;
+  exerciseState: ExerciseState;
+  notes: string;
+  place: string;
+};
+
+const emptyLog: WorkoutLog = {
+  completed: false,
+  energy: null,
+  exerciseState: {},
+  notes: "",
+  place: "",
+};
+
+const dayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+const monthFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+});
+const fullDateFormatter = new Intl.DateTimeFormat("en", {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
+
+export default function Home() {
+  const [selectedDate, setSelectedDate] = useState("");
+  const [programStart, setProgramStart] = useState("");
+  const [log, setLog] = useState<WorkoutLog>(emptyLog);
+  const [weeklyCompleted, setWeeklyCompleted] = useState<Set<string>>(new Set());
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [message, setMessage] = useState("");
+  const [timerDuration, setTimerDuration] = useState(90);
+  const [remaining, setRemaining] = useState(90);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerNotice, setTimerNotice] = useState("");
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const latestSaveId = useRef(0);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const today = toLocalDateKey(new Date());
+      setSelectedDate(today);
+      setProgramStart(getMonday(today));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const dayIndex = selectedDate ? getDayIndex(selectedDate) : 1;
+  const day = workoutDays[dayIndex - 1];
+  const weekStart = selectedDate ? getMonday(selectedDate) : "";
+  const cycleWeek =
+    selectedDate && programStart ? getCycleWeek(programStart, selectedDate) : 1;
+  const guidance = weekGuidance[cycleWeek - 1];
+  const weekDates = useMemo(
+    () => (weekStart ? Array.from({ length: 7 }, (_, index) => addDays(weekStart, index)) : []),
+    [weekStart],
+  );
+
+  useEffect(() => {
+    if (!selectedDate || !weekStart || !programStart) return;
+    const controller = new AbortController();
+
+    async function loadProgress() {
+      setLoadState("loading");
+      setMessage("");
+      try {
+        const params = new URLSearchParams({
+          date: selectedDate,
+          weekStart,
+          anchor: programStart,
+        });
+        const response = await fetch(`/api/progress?${params}`, {
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as {
+          error?: string;
+          log?: WorkoutLog | null;
+          settings?: { startDate?: string };
+          week?: { date: string; completed: boolean }[];
+        };
+        if (!response.ok) throw new Error(data.error || "Progress could not be loaded.");
+
+        setLog(data.log ?? emptyLog);
+        setProgramStart(data.settings?.startDate ?? programStart);
+        setWeeklyCompleted(
+          new Set((data.week ?? []).filter((item) => item.completed).map((item) => item.date)),
+        );
+        setLoadState("ready");
+        setSaveState("idle");
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setLoadState("error");
+        setMessage(error instanceof Error ? error.message : "Progress could not be loaded.");
+      }
+    }
+
+    void loadProgress();
+    return () => controller.abort();
+  }, [programStart, selectedDate, weekStart]);
+
+  const persist = useCallback(
+    (snapshot: WorkoutLog) => {
+      if (!selectedDate) return;
+      const saveId = ++latestSaveId.current;
+      setSaveState("saving");
+      setMessage("");
+
+      saveQueue.current = saveQueue.current
+        .catch(() => undefined)
+        .then(async () => {
+          const response = await fetch("/api/progress", {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              date: selectedDate,
+              dayIndex,
+              ...snapshot,
+            }),
+          });
+          const data = (await response.json()) as { error?: string };
+          if (!response.ok) throw new Error(data.error || "Progress could not be saved.");
+
+          setWeeklyCompleted((current) => {
+            const next = new Set(current);
+            if (snapshot.completed) next.add(selectedDate);
+            else next.delete(selectedDate);
+            return next;
+          });
+          if (latestSaveId.current === saveId) setSaveState("saved");
+        })
+        .catch((error: unknown) => {
+          if (latestSaveId.current === saveId) {
+            setSaveState("error");
+            setMessage(error instanceof Error ? error.message : "Progress could not be saved.");
+          }
+        });
+    },
+    [dayIndex, selectedDate],
+  );
+
+  function updateLog(patch: Partial<WorkoutLog>, saveNow = true) {
+    setLog((current) => {
+      const next = { ...current, ...patch };
+      if (saveNow) persist(next);
+      return next;
+    });
+  }
+
+  function toggleExercise(exerciseId: string) {
+    const exerciseState = {
+      ...log.exerciseState,
+      [exerciseId]: !log.exerciseState[exerciseId],
+    };
+    updateLog({ exerciseState });
+  }
+
+  function saveNotes() {
+    persist(log);
+  }
+
+  function startRest(seconds: number) {
+    setTimerDuration(seconds);
+    setRemaining(seconds);
+    setTimerRunning(true);
+    setTimerNotice("");
+  }
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const interval = window.setInterval(() => {
+      setRemaining((current) => {
+        if (current > 1) return current - 1;
+        window.clearInterval(interval);
+        setTimerRunning(false);
+        setTimerNotice("Rest complete");
+        if ("vibrate" in navigator) navigator.vibrate([180, 90, 180]);
+        return 0;
+      });
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [timerRunning]);
+
+  const completedExercises = day.exercises.filter(
+    (exercise) => log.exerciseState[exercise.id],
+  ).length;
+  const progress = Math.round((completedExercises / day.exercises.length) * 100);
+  const selectedDateLabel = selectedDate
+    ? fullDateFormatter.format(parseDateKey(selectedDate))
+    : "Loading today";
+
+  return (
+    <main className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="#today" aria-label="Pull 04 home">
+          <span className="brand-mark">P/04</span>
+          <span className="brand-name">Pull-up block</span>
+        </a>
+        <a className="audit-link" href="#audit">
+          Evidence audit <span aria-hidden="true">↘</span>
+        </a>
+      </header>
+
+      <section className="hero" id="today">
+        <div className="hero-copy">
+          <p className="kicker">BEGINNER+ · BAR + BAND · 4 WEEKS</p>
+          <h1>
+            Build the pull-up.
+            <br />
+            Keep the joints.
+          </h1>
+          <p className="hero-summary">
+            Three balanced strength days, deliberate recovery, and enough aerobic work
+            to make the plan useful beyond one exercise.
+          </p>
+        </div>
+        <div className="verdict-card">
+          <span className="verdict-label">Original plan verdict</span>
+          <strong>Good idea. Too much pulling as written.</strong>
+          <p>Optimized on 27 July 2026 using current guidance and clearly labeled anecdotes.</p>
+        </div>
+      </section>
+
+      <section className="week-strip" aria-label="Select a workout day">
+        <div className="week-strip-heading">
+          <div>
+            <span>THIS WEEK</span>
+            <strong>{weekStart ? monthFormatter.format(parseDateKey(weekStart)) : "—"}</strong>
+          </div>
+          <span>{weeklyCompleted.size}/7 logged</span>
+        </div>
+        <div className="day-picker">
+          {weekDates.map((date, index) => {
+            const isSelected = date === selectedDate;
+            const isDone = weeklyCompleted.has(date);
+            return (
+              <button
+                className={`day-pill ${isSelected ? "selected" : ""} ${isDone ? "done" : ""}`}
+                key={date}
+                onClick={() => setSelectedDate(date)}
+                aria-pressed={isSelected}
+                type="button"
+              >
+                <span>{dayNames[index]}</span>
+                <strong>{parseDateKey(date).getDate()}</strong>
+                <i aria-hidden="true">{isDone ? "✓" : ""}</i>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="today-grid">
+        <article className="session-panel">
+          <div className="session-heading">
+            <div>
+              <div className="date-nav">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+                  disabled={!selectedDate}
+                  aria-label="Previous day"
+                >
+                  ←
+                </button>
+                <span>{selectedDateLabel}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+                  disabled={!selectedDate}
+                  aria-label="Next day"
+                >
+                  →
+                </button>
+              </div>
+              <p className="session-eyebrow">DAY {day.day} · {day.eyebrow}</p>
+              <h2>{day.title}</h2>
+              <p className="session-summary">{day.summary}</p>
+            </div>
+            <div
+              className="progress-ring"
+              style={{ "--progress": `${progress * 3.6}deg` } as React.CSSProperties}
+              aria-label={`${progress}% of exercises checked`}
+            >
+              <span>{progress}%</span>
+            </div>
+          </div>
+
+          <div className="session-meta">
+            <span>◷ {day.duration}</span>
+            <span>◎ {day.intensity}</span>
+            <span>W{cycleWeek} · {guidance.label}</span>
+          </div>
+
+          {loadState === "loading" && (
+            <div className="status-box" role="status">Loading your saved session…</div>
+          )}
+          {loadState === "error" && (
+            <div className="status-box error" role="alert">{message}</div>
+          )}
+
+          <div className={`exercise-list ${loadState !== "ready" ? "muted" : ""}`}>
+            {day.exercises.map((exercise, index) => {
+              const checked = Boolean(log.exerciseState[exercise.id]);
+              return (
+                <article className={`exercise-card ${checked ? "checked" : ""}`} key={exercise.id}>
+                  <button
+                    className="exercise-check"
+                    type="button"
+                    onClick={() => toggleExercise(exercise.id)}
+                    disabled={loadState !== "ready"}
+                    aria-pressed={checked}
+                    aria-label={`${checked ? "Mark incomplete" : "Mark complete"}: ${exercise.name}`}
+                  >
+                    <span>{checked ? "✓" : String(index + 1).padStart(2, "0")}</span>
+                  </button>
+                  <div className="exercise-main">
+                    <div className="exercise-title-row">
+                      <h3>{exercise.name}</h3>
+                      {exercise.optional && <span className="optional-tag">OPTIONAL</span>}
+                    </div>
+                    <strong>{exercise.prescription}</strong>
+                    <p>{exercise.cue}</p>
+                    <div className="exercise-actions">
+                      {exercise.restSeconds && (
+                        <button type="button" onClick={() => startRest(exercise.restSeconds!)}>
+                          Start {exercise.restSeconds}s rest
+                        </button>
+                      )}
+                      {exercise.demoUrl && (
+                        <a href={exercise.demoUrl} target="_blank" rel="noreferrer">
+                          Form demo ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="complete-row">
+            <button
+              className={`complete-button ${log.completed ? "is-complete" : ""}`}
+              type="button"
+              onClick={() => updateLog({ completed: !log.completed })}
+              disabled={loadState !== "ready"}
+            >
+              <span>{log.completed ? "✓" : "○"}</span>
+              {log.completed ? "Session completed" : "Complete this session"}
+            </button>
+            <p>Optional items may be skipped. Completion is your judgment, not a punishment.</p>
+          </div>
+        </article>
+
+        <aside className="side-column">
+          <section className="week-focus card">
+            <div className="card-label">WEEK {cycleWeek} / 4</div>
+            <h2>{guidance.label}</h2>
+            <p>{guidance.guidance}</p>
+            <div className="week-dots" aria-label={`Week ${cycleWeek} of 4`}>
+              {weekGuidance.map((item) => (
+                <span className={item.week === cycleWeek ? "active" : ""} key={item.week}>
+                  {item.week}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section className="notes-card card">
+            <div className="card-label">SESSION LOG</div>
+            <label htmlFor="place">Training place</label>
+            <input
+              id="place"
+              value={log.place}
+              maxLength={100}
+              placeholder="Home, park, gym…"
+              onChange={(event) => updateLog({ place: event.target.value }, false)}
+              disabled={loadState !== "ready"}
+            />
+
+            <fieldset>
+              <legend>Energy before training</legend>
+              <div className="energy-row">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    type="button"
+                    key={value}
+                    className={log.energy === value ? "selected" : ""}
+                    onClick={() => updateLog({ energy: value })}
+                    disabled={loadState !== "ready"}
+                    aria-pressed={log.energy === value}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <label htmlFor="notes">Notes</label>
+            <textarea
+              id="notes"
+              value={log.notes}
+              maxLength={4000}
+              placeholder="Band color, reps, pain, what felt better…"
+              onChange={(event) => updateLog({ notes: event.target.value }, false)}
+              disabled={loadState !== "ready"}
+            />
+            <div className="save-notes-row">
+              <button type="button" onClick={saveNotes} disabled={loadState !== "ready"}>
+                Save place & notes
+              </button>
+              <span className={saveState === "error" ? "save-error" : ""} aria-live="polite">
+                {saveState === "saving" && "Saving…"}
+                {saveState === "saved" && "Saved"}
+                {saveState === "error" && "Not saved"}
+              </span>
+            </div>
+            {message && saveState === "error" && <p className="inline-error">{message}</p>}
+          </section>
+
+          {day.strengthDay && (
+            <details className="minimum-card card">
+              <summary>Low-energy version <span>+</span></summary>
+              <p>Use this instead of today’s full strength session—not as extra work.</p>
+              <ol>
+                <li>1 set assisted pull-ups</li>
+                <li>1 set push-ups</li>
+                <li>1 set squats or split squats</li>
+                <li>10-minute brisk walk</li>
+              </ol>
+            </details>
+          )}
+        </aside>
+      </section>
+
+      <section className="rules-section">
+        <div className="section-heading">
+          <p className="kicker">PROGRESSION, WITHOUT THE NOISE</p>
+          <h2>One variable at a time.</h2>
+        </div>
+        <div className="rule-grid">
+          <article>
+            <span>01</span>
+            <h3>Own the range</h3>
+            <p>Reach the top of the rep range on every prescribed set with clean form—twice.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Then progress</h3>
+            <p>Use slightly less band assistance, a harder variation, or modest backpack load.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Do not stack changes</h3>
+            <p>Change one thing, keep 1–3 reps in reserve, and watch recovery for a full week.</p>
+          </article>
+        </div>
+        <div className="pain-rule">
+          <strong>Sharp or increasing joint pain is a stop signal.</strong>
+          <p>
+            Muscle effort is expected; shoulder, elbow, or forearm pain that changes your movement
+            is not. Stop that exercise and seek qualified medical or rehabilitation advice if it persists.
+          </p>
+        </div>
+      </section>
+
+      <section className="audit-section" id="audit">
+        <div className="audit-heading">
+          <p className="kicker">EVIDENCE + REAL-WORLD CHECK</p>
+          <h2>What was changed, and why.</h2>
+          <p>
+            This separates established guidance, our plan-level inference, and anecdotal user reports.
+            That distinction matters.
+          </p>
+        </div>
+        <div className="audit-grid">
+          <article className="audit-card strong">
+            <span className="audit-type">ESTABLISHED GUIDANCE</span>
+            <h3>Bands and bodyweight are valid resistance tools.</h3>
+            <p>
+              ACSM’s 2026 review supports elastic bands, bodyweight, and home-based training.
+              It emphasizes training major muscle groups at least twice weekly and consistency over complexity.
+            </p>
+          </article>
+          <article className="audit-card inference">
+            <span className="audit-type">OUR INFERENCE</span>
+            <h3>The original pulling dose was unnecessarily aggressive.</h3>
+            <p>
+              Counting pull-ups, rows, scapular pulls, negatives, and hangs produced a high weekly
+              upper-pull exposure for a beginner-plus trainee. Three balanced exposures are easier to recover from.
+            </p>
+          </article>
+          <article className="audit-card anecdote">
+            <span className="audit-type">AUTHENTIC ANECDOTES</span>
+            <h3>Band versus negative pull-ups is not settled by reviews.</h3>
+            <p>
+              Community reports conflict: some users credit negatives, others bands, and several describe
+              forearm or elbow problems after negatives. These are genuine experiences, not controlled evidence.
+            </p>
+          </article>
+          <article className="audit-card changed">
+            <span className="audit-type">PROGRAM CHANGE</span>
+            <h3>Negatives became optional; dips were removed.</h3>
+            <p>
+              Negatives now require a pain-free controlled descent. Dips were removed because the listed
+              equipment does not include stable dip bars and push-ups already cover horizontal pressing.
+            </p>
+          </article>
+        </div>
+
+        <div className="source-list">
+          <div>
+            <span>01</span>
+            <a
+              href="https://acsm.org/resistance-training-guidelines-update-2026/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ACSM 2026 resistance-training position stand summary
+            </a>
+            <em>Current evidence synthesis</em>
+          </div>
+          <div>
+            <span>02</span>
+            <a
+              href="https://www.who.int/news-room/fact-sheets/detail/physical-activity"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WHO physical activity fact sheet
+            </a>
+            <em>Current public-health target</em>
+          </div>
+          <div>
+            <span>03</span>
+            <a
+              href="https://www.reddit.com/r/bodyweightfitness/comments/1b327xj/routine_for_pullups/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              2024 pull-up progression discussion
+            </a>
+            <em>Anecdotal, mixed experience</em>
+          </div>
+          <div>
+            <span>04</span>
+            <a
+              href="https://www.reddit.com/r/bodyweightfitness/comments/jdqigi/i_did_my_first_pullup_today_dont_use_banded/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Bands versus negatives discussion
+            </a>
+            <em>Anecdotal, includes adverse experiences</em>
+          </div>
+        </div>
+
+        <div className="truth-note">
+          <strong>No authentic reviews exist for this exact plan.</strong>
+          <p>
+            It is a bespoke, unpublished program. Claims that “real users reviewed this plan” would be invented.
+            The assessment above compares its ingredients and dosage with current guidance and openly identified
+            community reports.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <div>
+          <span className="brand-mark">P/04</span>
+          <p>A practical four-week block. Not medical care or individualized coaching.</p>
+        </div>
+        <a href="#today">Back to today ↑</a>
+      </footer>
+
+      <section className={`timer-dock ${timerRunning ? "running" : ""}`} aria-label="Rest timer">
+        <div className="timer-readout">
+          <span>REST</span>
+          <strong>{formatTimer(remaining)}</strong>
+        </div>
+        <div className="timer-presets" aria-label="Timer presets">
+          {[60, 90, 120].map((seconds) => (
+            <button
+              type="button"
+              key={seconds}
+              className={timerDuration === seconds ? "selected" : ""}
+              onClick={() => {
+                setTimerDuration(seconds);
+                setRemaining(seconds);
+                setTimerRunning(false);
+                setTimerNotice("");
+              }}
+            >
+              {seconds}s
+            </button>
+          ))}
+        </div>
+        <button
+          className="timer-control"
+          type="button"
+          onClick={() => {
+            if (remaining === 0) setRemaining(timerDuration);
+            setTimerRunning((current) => !current);
+            setTimerNotice("");
+          }}
+        >
+          {timerRunning ? "Pause" : remaining === 0 ? "Again" : "Start"}
+        </button>
+        <button
+          className="timer-reset"
+          type="button"
+          onClick={() => {
+            setTimerRunning(false);
+            setRemaining(timerDuration);
+            setTimerNotice("");
+          }}
+          aria-label="Reset timer"
+        >
+          ↺
+        </button>
+        <span className="sr-only" aria-live="assertive">{timerNotice}</span>
+      </section>
+    </main>
+  );
+}

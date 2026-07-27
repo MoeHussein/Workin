@@ -1,0 +1,43 @@
+import assert from "node:assert/strict";
+import { access, readFile } from "node:fs/promises";
+import test from "node:test";
+
+test("builds a deployable worker and completed workout product shell", async () => {
+  const [page, layout] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  await access(new URL("../dist/server/index.js", import.meta.url));
+  assert.match(layout, /P\/04 — Four-week pull-up training block/);
+  assert.match(page, /Build the pull-up/);
+  assert.match(page, /Evidence audit/);
+  assert.match(page, /REST/);
+  assert.doesNotMatch(`${page}\n${layout}`, /codex-preview|react-loading-skeleton/i);
+});
+
+test("removes starter-only product artifacts", async () => {
+  const [page, layout, packageJson] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(page, /No authentic reviews exist for this exact plan/);
+  assert.match(page, /Training place/);
+  assert.match(page, /Start \{exercise\.restSeconds\}s rest/);
+  assert.match(layout, /Four-week pull-up training block/);
+  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
+  await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
+});
+
+test("declares persistent D1 storage", async () => {
+  const hosting = JSON.parse(
+    await readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
+  );
+  assert.equal(hosting.d1, "DB");
+  assert.equal(hosting.r2, null);
+  await access(new URL("../db/schema.ts", import.meta.url));
+  await access(new URL("../drizzle/0000_brief_shen.sql", import.meta.url));
+});
