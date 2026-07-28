@@ -101,6 +101,129 @@ a {
   text-underline-offset: 4px;
 }
 
+/* Workout-first layout: keep the supporting explanation out of the primary path. */
+.hero,
+.rules-section,
+.audit-section,
+footer {
+  display: none;
+}
+
+.week-strip {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 18px clamp(20px, 5vw, 72px);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.week-strip-heading {
+  flex-direction: row;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.day-picker {
+  grid-template-columns: repeat(7, minmax(40px, 1fr));
+}
+
+.day-pill {
+  min-height: 58px;
+}
+
+.today-grid {
+  padding-top: clamp(28px, 4vw, 52px);
+}
+
+.week-guidance {
+  margin: 18px 0 4px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--signal);
+  background: var(--paper-deep);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.week-guidance strong {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.week-guidance span {
+  color: var(--muted);
+}
+
+.notes-card {
+  padding: 0;
+}
+
+.notes-card summary,
+.plan-guide summary {
+  min-height: 58px;
+  padding: 18px 24px;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+}
+
+.notes-card summary::-webkit-details-marker,
+.plan-guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.notes-card summary span,
+.plan-guide summary span {
+  color: var(--orange);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.notes-card[open] summary span,
+.plan-guide[open] summary span {
+  transform: rotate(45deg);
+}
+
+.notes-content {
+  padding: 0 24px 24px;
+}
+
+.plan-guide {
+  max-width: 1500px;
+  margin: 0 auto 84px;
+  border-top: 1px solid var(--line);
+}
+
+.plan-guide summary {
+  padding-left: clamp(20px, 5vw, 72px);
+  padding-right: clamp(20px, 5vw, 72px);
+}
+
+.guide-grid {
+  padding: 0 clamp(20px, 5vw, 72px) 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.guide-grid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.guide-grid strong {
+  color: var(--ink);
+}
+
 .hero {
   min-height: 560px;
   padding: clamp(52px, 8vw, 112px) clamp(20px, 6vw, 96px) 56px;
@@ -1265,6 +1388,37 @@ footer a {
 
   .timer-presets {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .week-strip {
+    padding: 16px 20px;
+  }
+
+  .week-strip-heading {
+    margin-bottom: 10px;
+  }
+
+  .day-picker {
+    gap: 4px;
+  }
+
+  .day-pill {
+    min-height: 54px;
+    padding: 7px 4px;
+  }
+
+  .day-pill strong {
+    font-size: 19px;
+  }
+
+  .side-column {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-grid {
+    grid-template-columns: 1fr;
   }
 }
 

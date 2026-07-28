@@ -226,30 +226,10 @@ export default function Home() {
           <span className="brand-mark">P/04</span>
           <span className="brand-name">Pull-up block</span>
         </a>
-        <a className="audit-link" href="#audit">
-          Evidence audit <span aria-hidden="true">↘</span>
+        <a className="audit-link" href="#guide">
+          Plan guide <span aria-hidden="true">↓</span>
         </a>
       </header>
-
-      <section className="hero" id="today">
-        <div className="hero-copy">
-          <p className="kicker">BEGINNER+ · BAR + BAND · 4 WEEKS</p>
-          <h1>
-            Build the pull-up.
-            <br />
-            Keep the joints.
-          </h1>
-          <p className="hero-summary">
-            Three balanced strength days, deliberate recovery, and enough aerobic work
-            to make the plan useful beyond one exercise.
-          </p>
-        </div>
-        <div className="verdict-card">
-          <span className="verdict-label">Original plan verdict</span>
-          <strong>Good idea. Too much pulling as written.</strong>
-          <p>Optimized on 27 July 2026 using current guidance and clearly labeled anecdotes.</p>
-        </div>
-      </section>
 
       <section className="week-strip" aria-label="Select a workout day">
         <div className="week-strip-heading">
@@ -322,6 +302,11 @@ export default function Home() {
             <span>W{cycleWeek} · {guidance.label}</span>
           </div>
 
+          <div className="week-guidance">
+            <strong>Week {cycleWeek} · {guidance.label}</strong>
+            <span>{guidance.guidance}</span>
+          </div>
+
           {loadState === "loading" && (
             <div className="status-box" role="status">Loading your saved session…</div>
           )}
@@ -391,20 +376,9 @@ export default function Home() {
         </article>
 
         <aside className="side-column">
-          <section className="week-focus card">
-            <div className="card-label">WEEK {cycleWeek} / 4</div>
-            <h2>{guidance.label}</h2>
-            <p>{guidance.guidance}</p>
-            <div className="week-dots" aria-label={`Week ${cycleWeek} of 4`}>
-              {weekGuidance.map((item) => (
-                <span className={item.week === cycleWeek ? "active" : ""} key={item.week}>
-                  {item.week}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          <section className="notes-card card">
+          <details className="notes-card card">
+            <summary>Session notes <span>+</span></summary>
+            <div className="notes-content">
             <div className="card-label">SESSION LOG</div>
             <label htmlFor="place">Training place</label>
             <input
@@ -454,7 +428,8 @@ export default function Home() {
               </span>
             </div>
             {message && saveState === "error" && <p className="inline-error">{message}</p>}
-          </section>
+            </div>
+          </details>
 
           {day.strengthDay && (
             <details className="minimum-card card">
@@ -610,6 +585,15 @@ export default function Home() {
         </div>
         <a href="#today">Back to today ↑</a>
       </footer>
+
+      <details className="plan-guide" id="guide">
+        <summary>Plan guide <span>+</span></summary>
+        <div className="guide-grid">
+          <p><strong>Progress:</strong> reach the top of a rep range with clean form twice, then change one variable.</p>
+          <p><strong>Effort:</strong> keep roughly 1–3 good reps in reserve so the next session is repeatable.</p>
+          <p><strong>Safety:</strong> stop if pain is sharp, increasing, or changes your movement.</p>
+        </div>
+      </details>
 
       <section className={`timer-dock ${timerRunning ? "running" : ""}`} aria-label="Rest timer">
         <div

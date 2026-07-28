@@ -10,8 +10,8 @@ test("builds a deployable worker and completed workout product shell", async () 
 
   await access(new URL("../dist/server/index.js", import.meta.url));
   assert.match(layout, /P\/04 — Four-week pull-up training block/);
-  assert.match(page, /Build the pull-up/);
-  assert.match(page, /Evidence audit/);
+  assert.match(page, /Plan guide/);
+  assert.match(page, /Complete this session/);
   assert.match(page, /REST/);
   assert.doesNotMatch(`${page}\n${layout}`, /codex-preview|react-loading-skeleton/i);
 });
@@ -23,7 +23,7 @@ test("removes starter-only product artifacts", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /No authentic reviews exist for this exact plan/);
+  assert.match(page, /Week \{cycleWeek\}/);
   assert.match(page, /Training place/);
   assert.match(page, /Start \{exercise\.restSeconds\}s rest/);
   assert.match(page, /timer-orbit/);
