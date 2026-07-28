@@ -54,6 +54,10 @@ export default function Home() {
   const [remaining, setRemaining] = useState(90);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerNotice, setTimerNotice] = useState("");
+  const [downloadState, setDownloadState] = useState<"idle" | "creating" | "done" | "error">(
+    "idle",
+  );
+  const exportCardRef = useRef<HTMLElement>(null);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const latestSaveId = useRef(0);
 
@@ -190,6 +194,34 @@ export default function Home() {
     setTimerNotice("");
   }
 
+  async function downloadWorkout() {
+    if (!exportCardRef.current || !selectedDate || downloadState === "creating") return;
+
+    setDownloadState("creating");
+    try {
+      const { toBlob } = await import("html-to-image");
+      const blob = await toBlob(exportCardRef.current, {
+        backgroundColor: "#141513",
+        cacheBust: true,
+        pixelRatio: 1,
+      });
+      if (!blob) throw new Error("The workout image could not be created.");
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `workin-day-${day.day}-${selectedDate}.png`;
+      link.href = objectUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+      setDownloadState("done");
+      window.setTimeout(() => setDownloadState("idle"), 2_500);
+    } catch {
+      setDownloadState("error");
+    }
+  }
+
   useEffect(() => {
     if (!timerRunning) return;
     const interval = window.setInterval(() => {
@@ -222,7 +254,7 @@ export default function Home() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#today" aria-label="Pull 04 home">
+        <a className="brand" href="#today" aria-label="Workin home">
           <span className="brand-mark">W</span>
           <span className="brand-name">Workin</span>
         </a>
@@ -300,6 +332,26 @@ export default function Home() {
             <span>◷ {day.duration}</span>
             <span>◎ {day.intensity}</span>
             <span>W{cycleWeek} · {guidance.label}</span>
+          </div>
+
+          <div className="session-actions">
+            <button
+              className="download-workout-button"
+              type="button"
+              onClick={downloadWorkout}
+              disabled={!selectedDate || downloadState === "creating"}
+            >
+              <span aria-hidden="true">↓</span>
+              {downloadState === "creating" ? "Designing image…" : "Download workout"}
+            </button>
+            <span
+              className={`download-status ${downloadState === "error" ? "error" : ""}`}
+              role={downloadState === "error" ? "alert" : "status"}
+              aria-live="polite"
+            >
+              {downloadState === "done" && "Workout image downloaded"}
+              {downloadState === "error" && "Could not create the image. Please try again."}
+            </span>
           </div>
 
           <div className="week-guidance">
@@ -585,6 +637,51 @@ export default function Home() {
         </div>
         <a href="#today">Back to today ↑</a>
       </footer>
+
+      <section className="workout-export-stage" aria-hidden="true">
+        <article className="workout-export-card" ref={exportCardRef}>
+          <header className="export-header">
+            <div className="export-brand">
+              <span>W</span>
+              <strong>Workin</strong>
+            </div>
+            <p>4-week pull-up block</p>
+          </header>
+
+          <div className="export-hero">
+            <p>DAY {day.day} · WEEK {cycleWeek}</p>
+            <h2>{day.title}</h2>
+            <span>{selectedDateLabel}</span>
+          </div>
+
+          <div className="export-meta">
+            <span>{day.duration}</span>
+            <span>{day.intensity}</span>
+            <span>{guidance.label}</span>
+          </div>
+
+          <div className="export-exercises">
+            {activeExercises.map((exercise, index) => (
+              <section className="export-exercise" key={exercise.id}>
+                <span className="export-number">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <div className="export-exercise-title">
+                    <h3>{exercise.name}</h3>
+                    {exercise.optional && <span>OPTIONAL</span>}
+                  </div>
+                  <strong>{exercise.prescription}</strong>
+                  <p>{exercise.cue}</p>
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <footer className="export-footer">
+            <strong>Move well. Leave 1–3 good reps in reserve.</strong>
+            <span>WORKIN · {selectedDate}</span>
+          </footer>
+        </article>
+      </section>
 
       <details className="plan-guide" id="guide">
         <summary>Plan guide <span>+</span></summary>

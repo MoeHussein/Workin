@@ -1674,3 +1674,259 @@ body {
   .progress-ring { width: 72px; }
   .progress-ring::before { width: 54px; }
 }
+
+.session-actions {
+  min-height: 52px;
+  margin: 14px 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.download-workout-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(20, 21, 19, 0.1);
+  border-radius: 14px;
+  background: var(--ink);
+  box-shadow: 0 8px 20px rgba(20, 21, 19, 0.12);
+  color: var(--paper);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.download-workout-button span {
+  color: var(--signal);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.download-workout-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(20, 21, 19, 0.18);
+}
+
+.download-workout-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.download-status {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.download-status.error {
+  color: #b73518;
+}
+
+.workout-export-stage {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.workout-export-card {
+  width: 1080px;
+  min-height: 1350px;
+  padding: 72px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(217, 255, 67, 0.17), transparent 21%),
+    #141513;
+  color: #f7f7f4;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.export-header {
+  padding: 0 0 34px;
+  border-bottom: 1px solid rgba(247, 247, 244, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.export-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-brand span {
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  background: #d9ff43;
+  color: #141513;
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.export-brand strong {
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.export-header > p {
+  margin: 0;
+  color: #999c90;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.export-hero {
+  padding: 56px 0 42px;
+}
+
+.export-hero > p {
+  margin: 0 0 16px;
+  color: #ff6b3d;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.export-hero h2 {
+  max-width: 820px;
+  margin: 0;
+  font-size: 76px;
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.065em;
+}
+
+.export-hero > span {
+  display: block;
+  margin-top: 24px;
+  color: #b8baaf;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.export-meta {
+  padding: 0 0 34px;
+  display: flex;
+  gap: 12px;
+}
+
+.export-meta span {
+  padding: 11px 16px;
+  border: 1px solid rgba(217, 255, 67, 0.38);
+  border-radius: 999px;
+  background: rgba(217, 255, 67, 0.08);
+  color: #d9ff43;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.export-exercises {
+  border-top: 1px solid rgba(247, 247, 244, 0.14);
+}
+
+.export-exercise {
+  padding: 25px 0;
+  border-bottom: 1px solid rgba(247, 247, 244, 0.14);
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.export-number {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ff6b3d;
+  color: #141513;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.export-exercise-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.export-exercise-title h3 {
+  margin: 0;
+  font-size: 29px;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.export-exercise-title > span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #d9ff43;
+  color: #141513;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.export-exercise > div > strong {
+  display: block;
+  margin-top: 9px;
+  color: #d9ff43;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.export-exercise > div > p {
+  margin: 8px 0 0;
+  color: #adafa5;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.workout-export-card .export-footer {
+  margin-top: auto;
+  padding: 32px 0 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.export-footer strong {
+  color: #f7f7f4;
+  font-size: 16px;
+}
+
+.export-footer span {
+  color: #ff6b3d;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 640px) {
+  .session-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .download-workout-button {
+    width: 100%;
+  }
+}
