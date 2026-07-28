@@ -223,8 +223,8 @@ export default function Home() {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="#today" aria-label="Pull 04 home">
-          <span className="brand-mark">P/04</span>
-          <span className="brand-name">Pull-up block</span>
+          <span className="brand-mark">W</span>
+          <span className="brand-name">Workin</span>
         </a>
         <a className="audit-link" href="#guide">
           Plan guide <span aria-hidden="true">↓</span>
@@ -580,8 +580,8 @@ export default function Home() {
 
       <footer>
         <div>
-          <span className="brand-mark">P/04</span>
-          <p>A practical four-week block. Not medical care or individualized coaching.</p>
+          <span className="brand-mark">W</span>
+          <p>Workin · A practical four-week block. Not medical care or individualized coaching.</p>
         </div>
         <a href="#today">Back to today ↑</a>
       </footer>

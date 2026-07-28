@@ -8,9 +8,9 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
-const title = "P/04 — Four-week pull-up training block";
+const title = "Workin — Four-week pull-up training block";
 const description =
-  "A phone-first, evidence-audited calisthenics plan with daily workouts, progress tracking, notes, and a rest timer.";
+  "A calm, phone-first workout companion with daily training, progress tracking, notes, and a circular rest timer.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       type: "website",
-      images: [{ url: imageUrl, width: 1734, height: 907, alt: "P/04 pull-up training block" }],
+      images: [{ url: imageUrl, width: 1734, height: 907, alt: "Workin pull-up training block" }],
     },
     twitter: {
       card: "summary_large_image",

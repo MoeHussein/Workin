@@ -9,7 +9,7 @@ test("builds a deployable worker and completed workout product shell", async () 
   ]);
 
   await access(new URL("../dist/server/index.js", import.meta.url));
-  assert.match(layout, /P\/04 — Four-week pull-up training block/);
+  assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(page, /Plan guide/);
   assert.match(page, /Complete this session/);
   assert.match(page, /REST/);
@@ -32,7 +32,7 @@ test("removes starter-only product artifacts", async () => {
     await readFile(new URL("../app/workout-data.ts", import.meta.url), "utf8"),
     /Band Romanian deadlift/,
   );
-  assert.match(layout, /Four-week pull-up training block/);
+  assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
