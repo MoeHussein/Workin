@@ -42,6 +42,10 @@ const fullDateFormatter = new Intl.DateTimeFormat("en", {
   day: "numeric",
 });
 
+function pdfText(value: string) {
+  return value.replace(/[–—−]/g, "-").replace(/\u00a0/g, " ");
+}
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState("");
   const [programStart, setProgramStart] = useState("");
@@ -57,7 +61,12 @@ export default function Home() {
   const [downloadState, setDownloadState] = useState<"idle" | "creating" | "done" | "error">(
     "idle",
   );
+  const [weeklyPdfState, setWeeklyPdfState] = useState<
+    "idle" | "creating" | "done" | "error"
+  >("idle");
+  const [weeklyPdfProgress, setWeeklyPdfProgress] = useState(0);
   const exportCardRef = useRef<HTMLElement>(null);
+  const weeklyPdfRef = useRef<HTMLElement>(null);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const latestSaveId = useRef(0);
 
@@ -195,8 +204,16 @@ export default function Home() {
   }
 
   async function downloadWorkout() {
-    if (!exportCardRef.current || !selectedDate || downloadState === "creating") return;
+    if (
+      !exportCardRef.current ||
+      !selectedDate ||
+      downloadState === "creating" ||
+      weeklyPdfState === "creating"
+    ) {
+      return;
+    }
 
+    setWeeklyPdfState("idle");
     setDownloadState("creating");
     try {
       const { toBlob } = await import("html-to-image");
@@ -219,6 +236,62 @@ export default function Home() {
       window.setTimeout(() => setDownloadState("idle"), 2_500);
     } catch {
       setDownloadState("error");
+    }
+  }
+
+  async function downloadCompleteWorkout() {
+    if (
+      !weeklyPdfRef.current ||
+      !weekStart ||
+      weekDates.length !== 7 ||
+      weeklyPdfState === "creating" ||
+      downloadState === "creating"
+    ) {
+      return;
+    }
+
+    const pages = Array.from(
+      weeklyPdfRef.current.querySelectorAll<HTMLElement>("[data-weekly-pdf-page]"),
+    );
+    if (pages.length !== 7) {
+      setWeeklyPdfState("error");
+      return;
+    }
+
+    setDownloadState("idle");
+    setWeeklyPdfState("creating");
+    setWeeklyPdfProgress(0);
+    try {
+      const [{ toJpeg }, { jsPDF }] = await Promise.all([
+        import("html-to-image"),
+        import("jspdf"),
+      ]);
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+        putOnlyUsedFonts: true,
+      });
+
+      for (let index = 0; index < pages.length; index += 1) {
+        const pageImage = await toJpeg(pages[index], {
+          backgroundColor: "#141513",
+          cacheBust: true,
+          pixelRatio: 1.4,
+          quality: 0.92,
+        });
+        if (index > 0) pdf.addPage("a4", "portrait");
+        pdf.addImage(pageImage, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+        setWeeklyPdfProgress(index + 1);
+        await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+
+      pdf.save(`workin-week-${weekStart}.pdf`);
+      setWeeklyPdfState("done");
+      window.setTimeout(() => setWeeklyPdfState("idle"), 2_500);
+    } catch {
+      setWeeklyPdfState("error");
     }
   }
 
@@ -339,18 +412,43 @@ export default function Home() {
               className="download-workout-button"
               type="button"
               onClick={downloadWorkout}
-              disabled={!selectedDate || downloadState === "creating"}
+              disabled={
+                !selectedDate ||
+                downloadState === "creating" ||
+                weeklyPdfState === "creating"
+              }
             >
               <span aria-hidden="true">↓</span>
               {downloadState === "creating" ? "Designing image…" : "Download workout"}
             </button>
+            <button
+              className="download-complete-button"
+              type="button"
+              onClick={downloadCompleteWorkout}
+              disabled={
+                weekDates.length !== 7 ||
+                weeklyPdfState === "creating" ||
+                downloadState === "creating"
+              }
+            >
+              <span aria-hidden="true">↓</span>
+              {weeklyPdfState === "creating"
+                ? `Creating PDF ${weeklyPdfProgress}/7…`
+                : "Download complete workout"}
+            </button>
             <span
-              className={`download-status ${downloadState === "error" ? "error" : ""}`}
-              role={downloadState === "error" ? "alert" : "status"}
+              className={`download-status ${
+                downloadState === "error" || weeklyPdfState === "error" ? "error" : ""
+              }`}
+              role={
+                downloadState === "error" || weeklyPdfState === "error" ? "alert" : "status"
+              }
               aria-live="polite"
             >
               {downloadState === "done" && "Workout image downloaded"}
               {downloadState === "error" && "Could not create the image. Please try again."}
+              {weeklyPdfState === "done" && "Complete weekly PDF downloaded"}
+              {weeklyPdfState === "error" && "Could not create the PDF. Please try again."}
             </span>
           </div>
 
@@ -681,6 +779,75 @@ export default function Home() {
             <span>WORKIN · {selectedDate}</span>
           </footer>
         </article>
+      </section>
+
+      <section className="weekly-pdf-export-stage" ref={weeklyPdfRef} aria-hidden="true">
+        {workoutDays.map((weeklyDay, index) => {
+          const scheduledDate = weekDates[index] ?? "";
+          const scheduledExercises = weeklyDay.exercises.filter(
+            (exercise) => !exercise.startsAfter || scheduledDate > exercise.startsAfter,
+          );
+          const scheduledDateLabel = scheduledDate
+            ? fullDateFormatter.format(parseDateKey(scheduledDate))
+            : `Day ${weeklyDay.day}`;
+
+          return (
+            <article
+              className="weekly-pdf-page"
+              data-weekly-pdf-page
+              key={weeklyDay.day}
+            >
+              <header className="weekly-pdf-header">
+                <div className="weekly-pdf-brand">
+                  <span>W</span>
+                  <div>
+                    <strong>Workin</strong>
+                    <small>Complete weekly workout</small>
+                  </div>
+                </div>
+                <p>WEEK {cycleWeek} / 4</p>
+              </header>
+
+              <div className="weekly-pdf-hero">
+                <div>
+                  <p>DAY {weeklyDay.day}</p>
+                  <h2>{pdfText(weeklyDay.title)}</h2>
+                  <span>{pdfText(scheduledDateLabel)}</span>
+                </div>
+                <strong>{String(weeklyDay.day).padStart(2, "0")}</strong>
+              </div>
+
+              <p className="weekly-pdf-summary">{pdfText(weeklyDay.summary)}</p>
+
+              <div className="weekly-pdf-meta">
+                <span>{pdfText(weeklyDay.duration)}</span>
+                <span>{pdfText(weeklyDay.intensity)}</span>
+                <span>{pdfText(guidance.label)}</span>
+              </div>
+
+              <div className="weekly-pdf-exercises">
+                {scheduledExercises.map((exercise, exerciseIndex) => (
+                  <section className="weekly-pdf-exercise" key={exercise.id}>
+                    <span>{String(exerciseIndex + 1).padStart(2, "0")}</span>
+                    <div>
+                      <div>
+                        <h3>{pdfText(exercise.name)}</h3>
+                        {exercise.optional && <small>OPTIONAL</small>}
+                      </div>
+                      <strong>{pdfText(exercise.prescription)}</strong>
+                      <p>{pdfText(exercise.cue)}</p>
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <footer className="weekly-pdf-footer">
+                <strong>Move well. Leave 1-3 good reps in reserve.</strong>
+                <span>WORKIN · PAGE {index + 1} / 7</span>
+              </footer>
+            </article>
+          );
+        })}
       </section>
 
       <details className="plan-guide" id="guide">

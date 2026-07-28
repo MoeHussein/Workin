@@ -1930,3 +1930,526 @@ body {
     width: 100%;
   }
 }
+
+/* Workin dark interface */
+html {
+  color-scheme: dark;
+}
+
+body,
+.app-shell {
+  background: #0d0f0c;
+  color: #f7f7f2;
+}
+
+body::selection {
+  background: var(--signal);
+  color: #141513;
+}
+
+.topbar {
+  border-bottom-color: rgba(247, 247, 242, 0.08);
+  background: rgba(13, 15, 12, 0.84);
+}
+
+.brand-mark {
+  background: var(--signal);
+  color: #141513;
+}
+
+.brand-name,
+.audit-link {
+  color: #f7f7f2;
+}
+
+.week-strip {
+  background: #0d0f0c;
+}
+
+.week-strip-heading span,
+.date-nav span,
+.session-summary,
+.week-guidance span,
+.complete-row p,
+.download-status,
+.guide-grid p,
+.minimum-card p,
+.minimum-card li {
+  color: #9da196;
+}
+
+.week-strip-heading strong,
+.session-heading h2,
+.exercise-title-row h3,
+.notes-card summary,
+.minimum-card summary,
+.plan-guide summary {
+  color: #f7f7f2;
+}
+
+.day-pill {
+  border-color: rgba(247, 247, 242, 0.1);
+  background: #181b16;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  color: #f7f7f2;
+}
+
+.day-pill:hover {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+}
+
+.day-pill.selected {
+  border-color: var(--signal);
+  background: var(--signal);
+  box-shadow: 0 9px 24px rgba(217, 255, 67, 0.13);
+  color: #141513;
+}
+
+.day-pill.selected i {
+  color: #d94b25;
+}
+
+.session-heading {
+  border-color: rgba(247, 247, 242, 0.11);
+}
+
+.date-nav button {
+  border-color: rgba(247, 247, 242, 0.14);
+  background: #181b16;
+  color: #f7f7f2;
+}
+
+.progress-ring {
+  background: conic-gradient(var(--orange) var(--progress), #242820 0);
+}
+
+.progress-ring::before {
+  background: #0d0f0c;
+}
+
+.progress-ring span {
+  color: #f7f7f2;
+}
+
+.session-meta {
+  border-color: rgba(247, 247, 242, 0.1);
+  color: #b6baaf;
+}
+
+.week-guidance {
+  border: 1px solid rgba(217, 255, 67, 0.18);
+  background: #1a2015;
+}
+
+.week-guidance strong {
+  color: var(--signal);
+}
+
+.exercise-card {
+  border-color: rgba(247, 247, 242, 0.09);
+  background: #181b16;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.16);
+}
+
+.exercise-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.exercise-card.checked {
+  border-color: rgba(217, 255, 67, 0.5);
+  background: #1c2515;
+}
+
+.exercise-card.deferred {
+  background: #131511;
+}
+
+.exercise-check {
+  border-color: rgba(247, 247, 242, 0.14);
+  background: #22261e;
+  color: #f7f7f2;
+}
+
+.exercise-card.checked .exercise-check {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: #141513;
+}
+
+.exercise-main > strong {
+  color: var(--signal);
+}
+
+.exercise-main > p {
+  color: #a5a99e;
+}
+
+.optional-tag {
+  border-color: rgba(255, 107, 61, 0.45);
+  background: rgba(255, 107, 61, 0.1);
+  color: var(--orange);
+}
+
+.exercise-actions button,
+.exercise-actions a {
+  border-color: rgba(247, 247, 242, 0.12);
+  background: #24281f;
+  color: #f7f7f2;
+}
+
+.exercise-actions button:hover,
+.exercise-actions a:hover {
+  border-color: rgba(217, 255, 67, 0.5);
+  color: var(--signal);
+}
+
+.status-box {
+  border-color: rgba(247, 247, 242, 0.1);
+  background: #181b16;
+  color: #b8bcb1;
+}
+
+.download-workout-button {
+  border-color: var(--signal);
+  background: var(--signal);
+  box-shadow: 0 10px 24px rgba(217, 255, 67, 0.12);
+  color: #141513;
+}
+
+.download-workout-button span {
+  color: #141513;
+}
+
+.download-complete-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid var(--orange);
+  border-radius: 14px;
+  background: var(--orange);
+  box-shadow: 0 10px 24px rgba(255, 107, 61, 0.13);
+  color: #141513;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.download-complete-button span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.download-complete-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(255, 107, 61, 0.2);
+}
+
+.download-complete-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.complete-button {
+  border-radius: 16px;
+  background: var(--signal);
+  color: #141513;
+}
+
+.complete-button.is-complete {
+  background: var(--orange);
+  color: #141513;
+}
+
+.notes-card,
+.minimum-card,
+.card {
+  border-color: rgba(247, 247, 242, 0.09);
+  background: #171a15;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+
+.notes-card input,
+.notes-card textarea {
+  border-color: rgba(247, 247, 242, 0.12);
+  background: #0f110e;
+  color: #f7f7f2;
+}
+
+.notes-card input::placeholder,
+.notes-card textarea::placeholder {
+  color: #6f736a;
+}
+
+.energy-row button {
+  border-color: rgba(247, 247, 242, 0.12);
+  background: #22261e;
+  color: #f7f7f2;
+}
+
+.energy-row button.selected {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: #141513;
+}
+
+.save-notes-row button {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: #141513;
+}
+
+.plan-guide {
+  border-color: rgba(247, 247, 242, 0.1);
+}
+
+.guide-grid strong {
+  color: var(--signal);
+}
+
+.timer-dock {
+  border-color: rgba(247, 247, 242, 0.14);
+  background: rgba(20, 21, 19, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+
+/* Fixed A4-ratio pages rendered into the downloadable weekly PDF. */
+.weekly-pdf-export-stage {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.weekly-pdf-page {
+  width: 794px;
+  height: 1123px;
+  padding: 48px 54px 42px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 93% 3%, rgba(217, 255, 67, 0.15), transparent 20%),
+    #141513;
+  color: #f7f7f2;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.weekly-pdf-header {
+  padding: 0 0 22px;
+  border-bottom: 1px solid rgba(247, 247, 242, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.weekly-pdf-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.weekly-pdf-brand > span {
+  width: 45px;
+  height: 45px;
+  border-radius: 14px;
+  background: #d9ff43;
+  color: #141513;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.weekly-pdf-brand > div {
+  display: grid;
+  gap: 2px;
+}
+
+.weekly-pdf-brand strong {
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.weekly-pdf-brand small {
+  color: #999d91;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.weekly-pdf-header > p {
+  margin: 0;
+  color: #ff6b3d;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.weekly-pdf-hero {
+  padding: 30px 0 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+}
+
+.weekly-pdf-hero p {
+  margin: 0 0 8px;
+  color: #ff6b3d;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.weekly-pdf-hero h2 {
+  max-width: 560px;
+  margin: 0;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.weekly-pdf-hero > div > span {
+  display: block;
+  margin-top: 11px;
+  color: #a9ada1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.weekly-pdf-hero > strong {
+  color: rgba(217, 255, 67, 0.16);
+  font-size: 92px;
+  line-height: 0.78;
+  letter-spacing: -0.08em;
+}
+
+.weekly-pdf-summary {
+  max-width: 640px;
+  margin: 0 0 16px;
+  color: #a9ada1;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.weekly-pdf-meta {
+  padding-bottom: 17px;
+  display: flex;
+  gap: 8px;
+}
+
+.weekly-pdf-meta span {
+  padding: 7px 10px;
+  border: 1px solid rgba(217, 255, 67, 0.28);
+  border-radius: 999px;
+  background: rgba(217, 255, 67, 0.07);
+  color: #d9ff43;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.weekly-pdf-exercises {
+  border-top: 1px solid rgba(247, 247, 242, 0.14);
+}
+
+.weekly-pdf-exercise {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(247, 247, 242, 0.12);
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 13px;
+}
+
+.weekly-pdf-exercise > span {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ff6b3d;
+  color: #141513;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.weekly-pdf-exercise > div > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.weekly-pdf-exercise h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.weekly-pdf-exercise small {
+  padding: 3px 5px;
+  border-radius: 999px;
+  background: #d9ff43;
+  color: #141513;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.weekly-pdf-exercise strong {
+  display: block;
+  margin-top: 4px;
+  color: #d9ff43;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.weekly-pdf-exercise p {
+  margin: 3px 0 0;
+  color: #a5a99d;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.weekly-pdf-page .weekly-pdf-footer {
+  margin-top: auto;
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(247, 247, 242, 0.14);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.weekly-pdf-footer strong {
+  color: #f7f7f2;
+  font-size: 10px;
+}
+
+.weekly-pdf-footer span {
+  color: #ff6b3d;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 640px) {
+  .session-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .download-complete-button {
+    width: 100%;
+  }
+}

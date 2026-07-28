@@ -13,7 +13,9 @@ test("builds a deployable worker and completed workout product shell", async () 
   assert.match(page, /Plan guide/);
   assert.match(page, /Complete this session/);
   assert.match(page, /Download workout/);
+  assert.match(page, /Download complete workout/);
   assert.match(page, /workout-export-card/);
+  assert.match(page, /weekly-pdf-page/);
   assert.match(page, /REST/);
   assert.doesNotMatch(`${page}\n${layout}`, /codex-preview|react-loading-skeleton/i);
 });
@@ -37,8 +39,12 @@ test("removes starter-only product artifacts", async () => {
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.match(packageJson, /"html-to-image": "1\.11\.13"/);
+  assert.match(packageJson, /"jspdf": "4\.2\.1"/);
   assert.match(page, /toBlob\(exportCardRef\.current/);
+  assert.match(page, /pdf\.addImage\(pageImage, "JPEG", 0, 0, 210, 297/);
+  assert.match(page, /pages\.length !== 7/);
   assert.match(page, /workin-day-\$\{day\.day\}-\$\{selectedDate\}\.png/);
+  assert.match(page, /workin-week-\$\{weekStart\}\.pdf/);
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
 });
