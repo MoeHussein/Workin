@@ -21,10 +21,11 @@ test("builds a deployable worker and completed workout product shell", async () 
 });
 
 test("removes starter-only product artifacts", async () => {
-  const [page, layout, packageJson] = await Promise.all([
+  const [page, layout, packageJson, css] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /Week \{cycleWeek\}/);
@@ -45,6 +46,8 @@ test("removes starter-only product artifacts", async () => {
   assert.match(page, /pages\.length !== 7/);
   assert.match(page, /workin-day-\$\{day\.day\}-\$\{selectedDate\}\.png/);
   assert.match(page, /workin-week-\$\{weekStart\}\.pdf/);
+  assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?flex: 0 0 auto;/);
+  assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?white-space: nowrap;/);
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
 });
