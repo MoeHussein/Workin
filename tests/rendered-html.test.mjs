@@ -12,7 +12,7 @@ test("builds a deployable worker and completed workout product shell", async () 
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(page, /Plan guide/);
   assert.match(page, /Complete this session/);
-  assert.match(page, /Download workout/);
+  assert.match(page, /Download today’s workout/);
   assert.match(page, /Download complete workout/);
   assert.match(page, /workout-export-card/);
   assert.match(page, /weekly-pdf-page/);
@@ -48,6 +48,9 @@ test("removes starter-only product artifacts", async () => {
   assert.match(page, /workin-week-\$\{weekStart\}\.pdf/);
   assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?flex: 0 0 auto;/);
   assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.download-workout-button \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.download-complete-button \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.download-arrow::before \{[\s\S]*?rotate\(45deg\)/);
   await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
 });

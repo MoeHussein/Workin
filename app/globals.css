@@ -1702,13 +1702,29 @@ body {
   gap: 9px;
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
   transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
 }
 
-.download-workout-button span {
-  color: var(--signal);
-  font-size: 18px;
-  line-height: 1;
+.download-arrow {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(20, 21, 19, 0.12);
+  color: #141513;
+  display: inline-grid;
+  flex: 0 0 22px;
+  place-items: center;
+}
+
+.download-arrow::before {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transform: translateY(-2px) rotate(45deg);
 }
 
 .download-workout-button:hover:not(:disabled) {
@@ -2120,10 +2136,6 @@ body::selection {
   color: #141513;
 }
 
-.download-workout-button span {
-  color: #141513;
-}
-
 .download-complete-button {
   min-height: 46px;
   padding: 0 18px;
@@ -2139,12 +2151,8 @@ body::selection {
   gap: 9px;
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
   transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-}
-
-.download-complete-button span {
-  font-size: 18px;
-  line-height: 1;
 }
 
 .download-complete-button:hover:not(:disabled) {

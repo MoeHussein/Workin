@@ -418,8 +418,8 @@ export default function Home() {
                 weeklyPdfState === "creating"
               }
             >
-              <span aria-hidden="true">↓</span>
-              {downloadState === "creating" ? "Designing image…" : "Download workout"}
+              <span className="download-arrow" aria-hidden="true" />
+              {downloadState === "creating" ? "Designing image…" : "Download today’s workout"}
             </button>
             <button
               className="download-complete-button"
@@ -431,7 +431,7 @@ export default function Home() {
                 downloadState === "creating"
               }
             >
-              <span aria-hidden="true">↓</span>
+              <span className="download-arrow" aria-hidden="true" />
               {weeklyPdfState === "creating"
                 ? `Creating PDF ${weeklyPdfProgress}/7…`
                 : "Download complete workout"}
