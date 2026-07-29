@@ -785,6 +785,13 @@ footer {
   line-height: 1.5;
 }
 
+.log-hint {
+  margin: -2px 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .notes-card fieldset {
   margin: 0;
   padding: 0;

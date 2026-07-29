@@ -40,6 +40,18 @@ test("removes starter-only product artifacts", async () => {
     await readFile(new URL("../app/workout-data.ts", import.meta.url), "utf8"),
     /Band Romanian deadlift/,
   );
+  const workoutData = await readFile(
+    new URL("../app/workout-data.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(workoutData, /name: "Band pull-apart"/);
+  assert.match(workoutData, /restSeconds: 90,[\s\S]*?omitInWeek4: true/);
+  assert.match(workoutData, /able to talk but not sing/);
+  assert.match(workoutData, /week4Prescription: "2 × 4–8"/);
+  assert.match(workoutData, /every working set reaches the top/);
+  assert.match(page, /getExercisesForWeek/);
+  assert.match(page, /final-set RIR/);
+  assert.match(page, /radiating, unstable/);
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(layout, /\/favicon\.svg/);
   await access(new URL("../public/workin-logo.svg", import.meta.url));
@@ -84,4 +96,48 @@ test("declares persistent D1 storage and the Monday-first schedule", async () =>
   assert.match(scheduleMigration, /'2026-07-28',\s*2,\s*true/);
   await access(new URL("../db/schema.ts", import.meta.url));
   await access(new URL("../drizzle/0000_brief_shen.sql", import.meta.url));
+});
+
+test("exports the current plan as review-ready JSON", async () => {
+  const plan = JSON.parse(
+    await readFile(new URL("../exports/workin-plan.json", import.meta.url), "utf8"),
+  );
+  const exerciseCount = plan.days.reduce(
+    (total, day) => total + day.exercises.length,
+    0,
+  );
+
+  assert.equal(plan.schemaVersion, 2);
+  assert.equal(plan.plan.programStartDate, "2026-07-27");
+  assert.equal(plan.plan.weekStartsOn, "Monday");
+  assert.equal(plan.plan.scheduleVersion, 3);
+  assert.equal(plan.traineeProfile.demographics.sex, "male");
+  assert.equal(plan.traineeProfile.demographics.ageYears, 25);
+  assert.equal(plan.traineeProfile.demographics.heightCm, 190);
+  assert.equal(plan.traineeProfile.demographics.bodyWeightKg, 88);
+  assert.equal(plan.calculations.proteinGramsPerKgPerDay.value, 1.76);
+  assert.match(plan.planRules.progression, /every working set/);
+  assert.match(plan.planRules.moderateAerobic, /talk but not sing/);
+  assert.equal(
+    plan.traineeProfile.currentBlock.completedSessions.length,
+    2,
+  );
+  assert.ok(plan.validationReadiness.auditChecklist.length >= 10);
+  assert.ok(plan.validationReadiness.openQuestions.length >= 8);
+  assert.equal(plan.days.length, 7);
+  assert.equal(exerciseCount, 37);
+  assert.equal(plan.days[0].weekday, "Monday");
+  assert.equal(plan.days[0].title, "Strength A");
+  assert.equal(plan.days[0].exercises[1].week4Prescription, "2 × 4–8");
+  assert.equal(
+    plan.days[2].exercises.find((exercise) => exercise.id === "c-face-pull").name,
+    "Band pull-apart",
+  );
+  assert.equal(
+    plan.days[1].exercises.find((exercise) => exercise.id === "b-hang").omitInWeek4,
+    true,
+  );
+  assert.equal(plan.days[6].weekday, "Sunday");
+  assert.equal(plan.days[6].title, "Full rest");
+  assert.equal(plan.weekGuidance.length, 4);
 });

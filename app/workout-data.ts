@@ -7,6 +7,8 @@ export type Exercise = {
   optional?: boolean;
   demoUrl?: string;
   startsAfter?: string;
+  week4Prescription?: string;
+  omitInWeek4?: boolean;
 };
 
 export type WorkoutDay = {
@@ -18,6 +20,15 @@ export type WorkoutDay = {
   summary: string;
   strengthDay: boolean;
   exercises: Exercise[];
+};
+
+export const planRules = {
+  progression:
+    "Keep the variation, band, load, attachment, and setup consistent. Progress only when every working set reaches the top of its range with stable technique and the target effort in two comparable sessions. Both sides must qualify; change one variable, then return to the lower end of the range.",
+  safety:
+    "Stop or regress an exercise for sharp, escalating, radiating, unstable, or joint-specific pain, or when you cannot maintain the prescribed position. Omit it rather than adding replacement sets. Persistent symptoms, trauma, neurologic symptoms, chest pain, or fainting require qualified assessment.",
+  moderateAerobic:
+    "Count a segment as moderate when effort is about 5–6/10 and you can talk but not sing. A genuinely light recovery walk is useful but does not count toward the moderate-minute total.",
 };
 
 export const workoutDays: WorkoutDay[] = [
@@ -42,8 +53,9 @@ export const workoutDays: WorkoutDay[] = [
         name: "Band-assisted pull-up",
         prescription: "3 × 4–8",
         restSeconds: 120,
-        cue: "Use enough assistance for smooth full-range reps. Stop with about 2 good reps left.",
+        cue: "Use one inspected band and the same setup for every set. Log the band, reps, and final-set RIR; stop with about 2 good reps left.",
         demoUrl: "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+        week4Prescription: "2 × 4–8",
       },
       {
         id: "a-pushup",
@@ -51,14 +63,16 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "3 × 8–15",
         restSeconds: 90,
         cue: "Keep ribs controlled and move chest and hips together. Elevate hands if needed.",
+        week4Prescription: "2 × 8–15",
       },
       {
         id: "a-split-squat",
         name: "Bulgarian split squat",
         prescription: "3 × 8–12 / side",
         restSeconds: 90,
-        cue: "Use a stable rear-foot support. Keep the front foot fully planted.",
+        cue: "Left plus right equals one set; rest 90 seconds after both sides and alternate the starting side. Use stable support.",
         demoUrl: "https://www.youtube.com/watch?v=-4LVK1crLSw",
+        week4Prescription: "2 × 8–12 / side",
       },
       {
         id: "a-hinge",
@@ -67,6 +81,7 @@ export const workoutDays: WorkoutDay[] = [
         restSeconds: 90,
         cue: "Added after your first-session review to cover the missing hip hinge. Start on your next Day 1; push the hips back with a neutral trunk and keep about 2 reps in reserve.",
         startsAfter: "2026-07-27",
+        week4Prescription: "2 × 10–15",
       },
       {
         id: "a-row",
@@ -81,13 +96,13 @@ export const workoutDays: WorkoutDay[] = [
         name: "Plank or hollow hold",
         prescription: "2 × 20–40 sec",
         restSeconds: 60,
-        cue: "Choose the variation you can hold without losing trunk position.",
+        cue: "Choose plank or hollow hold once and keep that variation for the block. End before trunk position changes.",
       },
       {
         id: "a-walk",
         name: "Brisk cooldown walk",
         prescription: "10 min",
-        cue: "Moderate pace: breathing faster, but still able to speak in short sentences.",
+        cue: "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. Otherwise keep it light for recovery.",
       },
     ],
   },
@@ -105,7 +120,7 @@ export const workoutDays: WorkoutDay[] = [
         id: "b-cardio",
         name: "Brisk walk or easy jog/walk",
         prescription: "40 min",
-        cue: "Use a conversational pace. Slow down before the session becomes hard.",
+        cue: "Aim for about 5–6/10 effort: able to talk but not sing. Log time, distance or pace, and the talk test.",
       },
       {
         id: "b-hip",
@@ -123,9 +138,11 @@ export const workoutDays: WorkoutDay[] = [
         id: "b-hang",
         name: "Relaxed dead hang",
         prescription: "2 × 15–30 sec",
-        cue: "Optional. Skip it if the shoulder, elbow, or grip feels irritated.",
+        restSeconds: 90,
+        cue: "Optional. Finish with clear grip reserve; skip if Monday recovery is incomplete or it may compromise Wednesday.",
         optional: true,
         demoUrl: "https://www.youtube.com/watch?v=dOCQjaasbGs",
+        omitInWeek4: true,
       },
     ],
   },
@@ -150,8 +167,9 @@ export const workoutDays: WorkoutDay[] = [
         name: "Band-assisted pull-up",
         prescription: "3 × 4–8",
         restSeconds: 120,
-        cue: "Match Day 1 technique. Do not reduce assistance mid-session to chase reps.",
+        cue: "Match Day 1 band and setup. Log every set and final-set RIR; do not reduce assistance mid-session to chase reps.",
         demoUrl: "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+        week4Prescription: "2 × 4–8",
       },
       {
         id: "c-pike",
@@ -159,13 +177,15 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "3 × 5–10",
         restSeconds: 90,
         cue: "Elevate the hands or reduce the pike angle if head-and-shoulder control is poor.",
+        week4Prescription: "2 × 5–10",
       },
       {
         id: "c-squat",
         name: "Squat or backpack squat",
         prescription: "3 × 12–20",
         restSeconds: 90,
-        cue: "Use a load that keeps the last reps controlled and repeatable.",
+        cue: "Choose one repeatable variation. Use bodyweight unless a securely loadable backpack is confirmed.",
+        week4Prescription: "2 × 12–20",
       },
       {
         id: "c-bridge",
@@ -173,28 +193,27 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "3 × 12–20",
         restSeconds: 75,
         cue: "Finish with the hips, not by arching the lower back.",
+        week4Prescription: "2 × 12–20",
       },
       {
         id: "c-face-pull",
-        name: "Band face pull",
+        name: "Band pull-apart",
         prescription: "2 × 12–20",
         restSeconds: 60,
-        cue: "Use light tension and finish with hands near eye level.",
-        demoUrl:
-          "https://support.runna.com/en/articles/7978879-banded-face-pulls-exercise-tutorial",
+        cue: "Use an inspected band below face level at 2–3 RIR. Use a wider grip or less stretch to regress; omit it if tension cannot be scaled safely.",
       },
       {
         id: "c-side-plank",
         name: "Side plank",
         prescription: "2 × 20–40 sec / side",
         restSeconds: 60,
-        cue: "Shorten the lever from the knees if the hips cannot stay stacked.",
+        cue: "Left plus right equals one set; rest 60 seconds after both sides. Shorten the lever if the hips cannot stay stacked.",
       },
       {
         id: "c-walk",
         name: "Brisk cooldown walk",
         prescription: "10 min",
-        cue: "Keep it moderate; this is not an interval workout.",
+        cue: "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. This is not an interval workout.",
       },
     ],
   },
@@ -212,7 +231,7 @@ export const workoutDays: WorkoutDay[] = [
         id: "d-walk",
         name: "Brisk walk",
         prescription: "30 min",
-        cue: "Keep the pace comfortable enough to feel better afterward.",
+        cue: "Keep this genuinely light and comfortable enough to feel better afterward; do not count it as moderate minutes.",
       },
       {
         id: "d-mobility",
@@ -249,8 +268,9 @@ export const workoutDays: WorkoutDay[] = [
         name: "Band-assisted pull-up",
         prescription: "3 × 4–8",
         restSeconds: 120,
-        cue: "Keep two reps in reserve. Use the same band for all working sets.",
+        cue: "Keep two reps in reserve. Use the same band and setup for all sets; log every set and final-set RIR.",
         demoUrl: "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+        week4Prescription: "2 × 4–8",
       },
       {
         id: "e-negative",
@@ -259,6 +279,7 @@ export const workoutDays: WorkoutDay[] = [
         restSeconds: 120,
         cue: "Optional and gated: only if you can control the full descent without shoulder, elbow, or forearm pain.",
         optional: true,
+        omitInWeek4: true,
       },
       {
         id: "e-pushup",
@@ -266,14 +287,16 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "3 × 8–15",
         restSeconds: 90,
         cue: "Use a repeatable variation. No need to train to failure.",
+        week4Prescription: "2 × 8–15",
       },
       {
         id: "e-split-squat",
         name: "Bulgarian split squat",
         prescription: "3 × 8–12 / side",
         restSeconds: 90,
-        cue: "Add backpack load only after reaching the top of the range cleanly.",
+        cue: "Left plus right equals one set; rest 90 seconds after both sides and alternate the starting side. Add only verified secure load.",
         demoUrl: "https://www.youtube.com/watch?v=-4LVK1crLSw",
+        week4Prescription: "2 × 8–12 / side",
       },
       {
         id: "e-row",
@@ -301,7 +324,7 @@ export const workoutDays: WorkoutDay[] = [
         id: "e-walk",
         name: "Brisk cooldown walk",
         prescription: "10 min",
-        cue: "Moderate, steady pace.",
+        cue: "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. Otherwise keep it light.",
       },
     ],
   },
@@ -319,7 +342,7 @@ export const workoutDays: WorkoutDay[] = [
         id: "f-cardio",
         name: "Brisk walk",
         prescription: "50 min",
-        cue: "A 35–45 minute jog/walk is an alternative if you are already adapted to running.",
+        cue: "Aim for about 5–6/10 effort, able to talk but not sing, and log pace or distance. Jog/walk only if already adapted.",
       },
       {
         id: "f-balance",
@@ -376,11 +399,11 @@ export const weekGuidance = [
   {
     week: 3,
     label: "Progress",
-    guidance: "If you reached the top of a range twice, change one variable: slightly less band help or a harder variation.",
+    guidance: "Progress only after every set reaches the top of its range at the target effort in two comparable sessions; both sides must qualify.",
   },
   {
     week: 4,
     label: "Consolidate",
-    guidance: "Remove one working set from each main exercise. Finish fresh; do not max out.",
+    guidance: "The listed 3-set main exercises become 2 sets, optional hangs and negatives are omitted, and strength work finishes near 3 RIR. Keep 2-set accessories unchanged and do not max out.",
   },
 ];

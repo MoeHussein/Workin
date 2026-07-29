@@ -11,7 +11,7 @@ import {
   parseDateKey,
   toLocalDateKey,
 } from "../lib/workout-utils.mjs";
-import { weekGuidance, workoutDays } from "./workout-data";
+import { planRules, weekGuidance, workoutDays, type Exercise } from "./workout-data";
 
 type ExerciseState = Record<string, boolean>;
 
@@ -45,6 +45,16 @@ const fullDateFormatter = new Intl.DateTimeFormat("en", {
 
 function pdfText(value: string) {
   return value.replace(/[–—−]/g, "-").replace(/\u00a0/g, " ");
+}
+
+function getExercisesForWeek(exercises: Exercise[], cycleWeek: number) {
+  return exercises
+    .filter((exercise) => cycleWeek !== 4 || !exercise.omitInWeek4)
+    .map((exercise) =>
+      cycleWeek === 4 && exercise.week4Prescription
+        ? { ...exercise, prescription: exercise.week4Prescription }
+        : exercise,
+    );
 }
 
 export default function Home() {
@@ -311,7 +321,8 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, [timerRunning]);
 
-  const activeExercises = day.exercises.filter(
+  const displayExercises = getExercisesForWeek(day.exercises, cycleWeek);
+  const activeExercises = displayExercises.filter(
     (exercise) => !exercise.startsAfter || selectedDate > exercise.startsAfter,
   );
   const completedExercises = activeExercises.filter(
@@ -321,6 +332,10 @@ export default function Home() {
     ? Math.round((completedExercises / activeExercises.length) * 100)
     : 0;
   const timerProgress = timerDuration > 0 ? (remaining / timerDuration) * 360 : 0;
+  const displayedIntensity =
+    cycleWeek === 4 && day.strengthDay
+      ? "Leave about 3 reps in reserve"
+      : day.intensity;
   const selectedDateLabel = selectedDate
     ? fullDateFormatter.format(parseDateKey(selectedDate))
     : "Loading today";
@@ -411,7 +426,7 @@ export default function Home() {
 
           <div className="session-meta">
             <span>◷ {day.duration}</span>
-            <span>◎ {day.intensity}</span>
+            <span>◎ {displayedIntensity}</span>
             <span>W{cycleWeek} · {guidance.label}</span>
           </div>
 
@@ -473,7 +488,7 @@ export default function Home() {
           )}
 
           <div className={`exercise-list ${loadState !== "ready" ? "muted" : ""}`}>
-            {day.exercises.map((exercise, index) => {
+            {displayExercises.map((exercise, index) => {
               const checked = Boolean(log.exerciseState[exercise.id]);
               const deferred = Boolean(
                 exercise.startsAfter && selectedDate <= exercise.startsAfter,
@@ -566,12 +581,16 @@ export default function Home() {
               </div>
             </fieldset>
 
-            <label htmlFor="notes">Notes</label>
+            <label htmlFor="notes">Workout log</label>
+            <p className="log-hint">
+              Record reps for every set, band and setup, final-set RIR, and any pain or
+              24–48 hour recovery issue. For cardio, add pace or distance and the talk test.
+            </p>
             <textarea
               id="notes"
               value={log.notes}
               maxLength={4000}
-              placeholder="Band color, reps, pain, what felt better…"
+              placeholder={"Pull-ups: band/setup · reps __ / __ / __ · final RIR __\nOther sets: reps or hold time · variation/load · RIR\nRecovery/cardio: symptoms · pace/distance · talk test"}
               onChange={(event) => updateLog({ notes: event.target.value }, false)}
               disabled={loadState !== "ready"}
             />
@@ -613,7 +632,7 @@ export default function Home() {
           <article>
             <span>01</span>
             <h3>Own the range</h3>
-            <p>Reach the top of the rep range on every prescribed set with clean form—twice.</p>
+            <p>Keep the same setup and reach the top on every set, at the target effort, in two comparable sessions.</p>
           </article>
           <article>
             <span>02</span>
@@ -623,14 +642,15 @@ export default function Home() {
           <article>
             <span>03</span>
             <h3>Do not stack changes</h3>
-            <p>Change one thing, keep 1–3 reps in reserve, and watch recovery for a full week.</p>
+            <p>Both sides must qualify. Change one thing, return to the lower end, and keep logging recovery.</p>
           </article>
         </div>
         <div className="pain-rule">
-          <strong>Sharp or increasing joint pain is a stop signal.</strong>
+          <strong>Sharp, increasing, radiating, unstable, or joint-specific pain is a stop signal.</strong>
           <p>
-            Muscle effort is expected; shoulder, elbow, or forearm pain that changes your movement
-            is not. Stop that exercise and seek qualified medical or rehabilitation advice if it persists.
+            Regress or omit the exercise if position cannot be maintained, and do not replace it
+            with extra sets. Persistent symptoms, trauma, neurologic symptoms, chest pain, or
+            fainting require qualified assessment.
           </p>
         </div>
       </section>
@@ -655,10 +675,10 @@ export default function Home() {
           </article>
           <article className="audit-card inference">
             <span className="audit-type">OUR INFERENCE</span>
-            <h3>The original pulling dose was unnecessarily aggressive.</h3>
+            <h3>The pulling dose is deliberate, but it must be logged.</h3>
             <p>
-              Counting pull-ups, rows, scapular pulls, negatives, and hangs produced a high weekly
-              upper-pull exposure for a beginner-plus trainee. Three balanced exposures are easier to recover from.
+              Pull-ups, rows, hangs, and optional negatives all contribute stress. The current
+              three balanced exposures are retained; reduce optional work first if recovery worsens.
             </p>
           </article>
           <article className="audit-card anecdote">
@@ -671,10 +691,10 @@ export default function Home() {
           </article>
           <article className="audit-card changed">
             <span className="audit-type">PROGRAM CHANGE</span>
-            <h3>Negatives became optional; dips were removed.</h3>
+            <h3>The genuine hinge gap was fixed without adding junk volume.</h3>
             <p>
-              Negatives now require a pain-free controlled descent. Dips were removed because the listed
-              equipment does not include stable dip bars and push-ups already cover horizontal pressing.
+              The band Romanian deadlift now covers the missing posterior-chain pattern. Negatives
+              remain optional and the rest of the recoverable weekly workload stays in place.
             </p>
           </article>
         </div>
@@ -805,7 +825,10 @@ export default function Home() {
       <section className="weekly-pdf-export-stage" ref={weeklyPdfRef} aria-hidden="true">
         {workoutDays.map((weeklyDay, index) => {
           const scheduledDate = weekDates[index] ?? "";
-          const scheduledExercises = weeklyDay.exercises.filter(
+          const scheduledExercises = getExercisesForWeek(
+            weeklyDay.exercises,
+            cycleWeek,
+          ).filter(
             (exercise) => !exercise.startsAfter || scheduledDate > exercise.startsAfter,
           );
           const scheduledDateLabel = scheduledDate
@@ -878,9 +901,9 @@ export default function Home() {
       <details className="plan-guide" id="guide">
         <summary>Plan guide <span>+</span></summary>
         <div className="guide-grid">
-          <p><strong>Progress:</strong> reach the top of a rep range with clean form twice, then change one variable.</p>
-          <p><strong>Effort:</strong> keep roughly 1–3 good reps in reserve so the next session is repeatable.</p>
-          <p><strong>Safety:</strong> stop if pain is sharp, increasing, or changes your movement.</p>
+          <p><strong>Progress:</strong> {planRules.progression}</p>
+          <p><strong>Aerobic:</strong> {planRules.moderateAerobic}</p>
+          <p><strong>Safety:</strong> {planRules.safety}</p>
         </div>
       </details>
 

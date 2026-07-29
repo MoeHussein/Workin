@@ -1,0 +1,916 @@
+{
+  "schemaVersion": 2,
+  "plan": {
+    "id": "workin-four-week-pull-up-block",
+    "name": "Workin",
+    "title": "Four-week pull-up training block",
+    "scheduleVersion": 3,
+    "programStartDate": "2026-07-27",
+    "weekStartsOn": "Monday",
+    "cycleLengthWeeks": 4,
+    "dayCount": 7,
+    "focus": "Pull-up development and general full-body fitness with strength, aerobic, recovery, and rest days."
+  },
+  "dataProvenance": {
+    "generatedFrom": "The current Workin workout data and the trainee details supplied in this conversation.",
+    "generatedOn": "2026-07-29",
+    "truthLayers": {
+      "userReported": "Personal details, history, goals, equipment, performance estimates, lifestyle, nutrition, and session feedback.",
+      "calculated": "Values explicitly listed under calculations and derived only from the named inputs.",
+      "coachInterpretation": "Working programming interpretations listed separately for critical review.",
+      "unknown": "Values represented as null or listed under validationReadiness.openQuestions."
+    },
+    "sensitiveDataNotice": "This file contains personal health, body, training, lifestyle, and nutrition information. Share it only with reviewers or systems you trust."
+  },
+  "traineeProfile": {
+    "provenance": {
+      "classification": "user-reported",
+      "recordedOn": "2026-07-29",
+      "verification": "Not independently verified and not a medical or clinical assessment."
+    },
+    "demographics": {
+      "sex": "male",
+      "ageYears": 25,
+      "heightCm": 190,
+      "bodyWeightKg": 88
+    },
+    "trainingBackground": {
+      "programmingLevel": "beginner-plus",
+      "history": "Intermittent training for a couple of years, usually for one or two months followed by a long break.",
+      "currentConsistency": "Approximately one month of recent consistent training."
+    },
+    "goals": {
+      "summary": "Develop a strong, athletic frame with strength, cardiovascular fitness, general flexibility, power, a wider back, and broad calisthenics ability.",
+      "bodyComposition": {
+        "maintainBodyWeight": true,
+        "reduceBodyFatSlightly": true,
+        "increaseMuscle": true
+      },
+      "performance": [
+        "Improve general strength.",
+        "Improve cardiovascular fitness.",
+        "Improve general flexibility.",
+        "Develop power and explosiveness.",
+        "Build a wider back.",
+        "Become broadly capable at calisthenics."
+      ],
+      "flexibility": "General flexibility; no specific limitation identified yet.",
+      "prioritiesRanked": false
+    },
+    "health": {
+      "injuries": "None reported.",
+      "medicalConditions": null,
+      "medicationsAffectingExercise": null,
+      "medicalClearance": null,
+      "note": "No reported injury is not equivalent to medical screening or clearance."
+    },
+    "equipmentAndSetting": {
+      "gymAccess": false,
+      "setting": "Outdoor park or calisthenics area.",
+      "equipment": [
+        "Dip or parallel bars",
+        "Pull-up bar",
+        "Resistance bands",
+        "Ladders",
+        "Handholds",
+        "Parallel bars",
+        "Equipment described by the user as gymnastic wheels"
+      ],
+      "resistanceBands": {
+        "labeledResistanceKg": [
+          10,
+          25,
+          35
+        ],
+        "brand": "Unknown or off-brand",
+        "actualResistanceVerified": false,
+        "bandLengthAndSetup": null
+      },
+      "clarificationNeeded": [
+        "Confirm whether 'gymnastic wheels' means gymnastic rings.",
+        "Record band length, anchor setup, and the band used for each assisted exercise.",
+        "Treat the printed band resistance as a label until its actual loading is verified."
+      ]
+    },
+    "schedulePreference": {
+      "acceptableTrainingDaysPerWeek": [
+        4,
+        5,
+        6
+      ],
+      "condition": "The user is open to four, five, or six days depending on the exercise mix and what the evidence supports.",
+      "interpretation": "This availability should not be interpreted as a request for four to six hard strength sessions."
+    },
+    "currentPerformance": {
+      "unassistedPullUpsMax": {
+        "minimumRepetitions": 2,
+        "maximumRepetitions": 3,
+        "status": "approximate"
+      },
+      "workingSetRepetitionsInReserve": {
+        "pushUps": {
+          "minimum": 2,
+          "maximum": 3,
+          "status": "approximate"
+        },
+        "pullUps": {
+          "minimum": 1,
+          "maximum": 2,
+          "status": "approximate"
+        }
+      },
+      "plankMaxSeconds": {
+        "minimum": 50,
+        "maximum": 60,
+        "status": "approximate"
+      },
+      "exactSetBySetRepetitions": null,
+      "maximumCleanPushUps": null,
+      "deadHangMaxSeconds": null
+    },
+    "lifestyleAndRecovery": {
+      "sleepHoursPerNight": 7.5,
+      "otherSportsOrCardio": "None reported.",
+      "workdayActivity": "Mostly seated.",
+      "perceivedRecovery": null
+    },
+    "nutrition": {
+      "goal": "Maintain body weight, reduce body fat slightly, and increase muscle.",
+      "proteinTargetGramsPerDay": 155,
+      "currentProteinDuration": "Approximately two weeks at the time this profile was recorded.",
+      "priorProteinIntake": "User reported it was much lower.",
+      "totalCalorieIntake": null,
+      "bodyWeightTrend": null,
+      "waistMeasurement": null
+    },
+    "currentBlock": {
+      "startDate": "2026-07-27",
+      "weekStartsOn": "Monday",
+      "completedSessions": [
+        {
+          "date": "2026-07-27",
+          "weekday": "Monday",
+          "planDay": 1,
+          "session": "Strength A",
+          "completed": true,
+          "report": "Completed every originally prescribed exercise with no issues. The session felt easy and smooth, but the user felt that something might be missing."
+        },
+        {
+          "date": "2026-07-28",
+          "weekday": "Tuesday",
+          "planDay": 2,
+          "session": "Aerobic base",
+          "completed": true,
+          "report": null
+        }
+      ],
+      "planHistory": [
+        {
+          "effectiveAfter": "2026-07-27",
+          "change": "A hinge movement was added after review of the first Strength A session.",
+          "reason": "Preserve the record of what the user actually completed versus the current plan."
+        }
+      ]
+    }
+  },
+  "calculations": {
+    "proteinGramsPerKgPerDay": {
+      "value": 1.76,
+      "formula": "155 g/day divided by 88 kg",
+      "classification": "calculated from user-reported values",
+      "interpretation": "This calculation documents the current target and does not by itself justify a program change."
+    }
+  },
+  "coachInterpretation": {
+    "classification": "working interpretation for review, not established fact",
+    "items": [
+      "The reported training history and current ability are more consistent with beginner-plus programming than a zero-beginner plan.",
+      "Three hard strength days remain the current recoverable anchor; additional active days are currently aerobic, mobility, recovery, or rest days.",
+      "The reported working sets were approximately one to three repetitions in reserve. A session feeling easy does not by itself establish that more volume is required.",
+      "Band-assisted pull-ups remain the current volume progression while maximum unassisted pull-up capacity is approximately two to three repetitions.",
+      "Power work should be evaluated as a progression pathway after the reviewer checks foundational strength, landing or deceleration control, and recovery.",
+      "Available park equipment creates future exercise options, but substitutions or additions should be introduced deliberately and then evaluated."
+    ]
+  },
+  "validationReadiness": {
+    "status": "Ready for initial review; several measurements remain open.",
+    "reviewerInstructions": [
+      "Treat traineeProfile values as user-reported unless explicitly marked as calculated.",
+      "Separate recommendations into retain, change now, measure first, and reconsider after the four-week block.",
+      "Do not describe the plan as optimal without comparing it with the trainee's goals, current performance, equipment, schedule, and recovery.",
+      "Prefer the smallest effective change and identify its intended start date.",
+      "Flag medical, pain, or technique questions instead of inventing an answer."
+    ],
+    "auditChecklist": [
+      "Check coverage of the major movement patterns and major muscle groups.",
+      "Calculate direct and indirect weekly set volume, especially pulling, grip, elbow-flexor, and forearm work.",
+      "Check strength-day frequency, spacing, and likely recovery demand.",
+      "Check whether each exercise is feasible with the listed park equipment.",
+      "Check band calibration and how assistance changes across band setups.",
+      "Check repetitions in reserve, rest periods, progression criteria, and regression criteria.",
+      "Check aerobic dose and progression against a mostly seated baseline with no other reported cardio.",
+      "Check whether the mobility work adequately serves a general flexibility goal and identify any missing assessment.",
+      "Define prerequisites and a conservative pathway for future power or explosive work.",
+      "Check whether the body-composition goals are mutually workable without inventing calorie intake or body-fat measurements.",
+      "Check the week-four deload or consolidation logic and the post-block reassessment plan.",
+      "Check pain, symptom, and stop criteria, including how the next session should be modified.",
+      "Provide substitutions for exercises that cannot be performed safely or consistently at the park.",
+      "Distinguish changes needed now from changes that should wait until the current four-week block is evaluated.",
+      "Do not convert availability for four to six days into four to six hard strength days without a specific recovery-based rationale.",
+      "Evaluate the current three-strength-day structure together with its aerobic and recovery days, not in isolation."
+    ],
+    "openQuestions": [
+      {
+        "id": "goal-priority",
+        "priority": "high",
+        "neededForInitialReview": true,
+        "question": "Which two goals should have the highest priority during the next three to six months?",
+        "whyItMatters": "The listed goals are broad and may require different programming emphasis."
+      },
+      {
+        "id": "set-log",
+        "priority": "high",
+        "neededForInitialReview": true,
+        "question": "What repetitions were completed in every working set, and which band was used for each assisted pull-up set?",
+        "whyItMatters": "Progression and fatigue cannot be judged accurately from prescriptions alone."
+      },
+      {
+        "id": "push-up-max",
+        "priority": "high",
+        "neededForInitialReview": true,
+        "question": "What is the current maximum number of clean push-ups using a consistent technique standard?",
+        "whyItMatters": "It helps calibrate push-up variations and working-set targets."
+      },
+      {
+        "id": "health-screen",
+        "priority": "high",
+        "neededForInitialReview": true,
+        "question": "Are there any medical conditions, symptoms, or medications relevant to exercise, even though no injuries were reported?",
+        "whyItMatters": "No reported injury does not complete a basic exercise-readiness screen."
+      },
+      {
+        "id": "ring-clarification",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "Does 'gymnastic wheels' mean gymnastic rings, and are they adjustable?",
+        "whyItMatters": "Rings would materially expand scalable pulling, pushing, and stability options."
+      },
+      {
+        "id": "band-setup",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "What are the bands' lengths and anchor configurations, and what do their kilogram labels represent?",
+        "whyItMatters": "A printed resistance label does not uniquely determine assistance through a movement."
+      },
+      {
+        "id": "dead-hang",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "What is the maximum controlled dead-hang time?",
+        "whyItMatters": "It provides a simple baseline for grip and hanging tolerance."
+      },
+      {
+        "id": "lower-body-baseline",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "What lower-body movements and repetition ranges can currently be performed with stable technique?",
+        "whyItMatters": "The current profile contains more upper-body performance detail than lower-body detail."
+      },
+      {
+        "id": "session-availability",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "How many minutes are reliably available on weekdays and weekends?",
+        "whyItMatters": "Session duration affects exercise selection, density, and adherence."
+      },
+      {
+        "id": "cardio-baseline",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "What pace, distance, heart-rate response, or talk-test result was observed during the aerobic-base session?",
+        "whyItMatters": "The current cardio baseline is described only by the completed session."
+      },
+      {
+        "id": "flexibility-specifics",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "Which positions or movements currently feel restricted?",
+        "whyItMatters": "A general flexibility goal needs specific baselines before targeted work can be evaluated."
+      },
+      {
+        "id": "body-composition-trend",
+        "priority": "low",
+        "neededForInitialReview": false,
+        "question": "If nutrition is reviewed, what are the recent body-weight and waist trends and approximate calorie intake?",
+        "whyItMatters": "The current data cannot establish energy balance or body-composition change."
+      },
+      {
+        "id": "recovery-and-pain-log",
+        "priority": "medium",
+        "neededForInitialReview": false,
+        "question": "How do soreness, joint discomfort, energy, and performance change during the 24 to 48 hours after each session?",
+        "whyItMatters": "Repeated recovery observations are more useful than one easy session for adjusting workload."
+      }
+    ]
+  },
+  "reviewScope": {
+    "intendedUse": "Shareable plan snapshot for review by qualified fitness professionals or AI systems.",
+    "includes": "Trainee profile, explicit calculations, current-block feedback, validation questions, program structure, weekday schedule, exercise dosage, rest periods, coaching cues, optional status, demonstration links, activation dates, and four-week progression guidance.",
+    "excludes": "Medical diagnosis, clinical clearance, independently verified performance, video-based technique assessment, measured body-fat percentage, and verified calorie intake.",
+    "disclaimer": "This file describes a training plan. It is not medical care or individualized clinical advice."
+  },
+  "planRules": {
+    "progression": "Keep the variation, band, load, attachment, and setup consistent. Progress only when every working set reaches the top of its range with stable technique and the target effort in two comparable sessions. Both sides must qualify; change one variable, then return to the lower end of the range.",
+    "safety": "Stop or regress an exercise for sharp, escalating, radiating, unstable, or joint-specific pain, or when you cannot maintain the prescribed position. Omit it rather than adding replacement sets. Persistent symptoms, trauma, neurologic symptoms, chest pain, or fainting require qualified assessment.",
+    "moderateAerobic": "Count a segment as moderate when effort is about 5–6/10 and you can talk but not sing. A genuinely light recovery walk is useful but does not count toward the moderate-minute total."
+  },
+  "weekGuidance": [
+    {
+      "week": 1,
+      "label": "Baseline",
+      "guidance": "Learn the movements, choose the right band, and finish most sets with 2–3 reps in reserve."
+    },
+    {
+      "week": 2,
+      "label": "Add reps",
+      "guidance": "Add one rep to a set where form and recovery allow. Keep the same assistance."
+    },
+    {
+      "week": 3,
+      "label": "Progress",
+      "guidance": "Progress only after every set reaches the top of its range at the target effort in two comparable sessions; both sides must qualify."
+    },
+    {
+      "week": 4,
+      "label": "Consolidate",
+      "guidance": "The listed 3-set main exercises become 2 sets, optional hangs and negatives are omitted, and strength work finishes near 3 RIR. Keep 2-set accessories unchanged and do not max out."
+    }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "weekday": "Monday",
+      "title": "Strength A",
+      "eyebrow": "Pull · push · legs",
+      "duration": "50–60 min",
+      "intensity": "Leave 2 reps in reserve",
+      "summary": "Every major movement pattern, with clean assisted pull-up volume and enough recovery to improve.",
+      "strengthDay": true,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "a-warmup",
+          "name": "Movement warm-up",
+          "prescription": "6 min",
+          "restSeconds": null,
+          "cue": "Walk, shoulder circles, 6 scapular pulls, 8 scapular push-ups, 10 squats.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "a-pullup",
+          "name": "Band-assisted pull-up",
+          "prescription": "3 × 4–8",
+          "restSeconds": 120,
+          "cue": "Use one inspected band and the same setup for every set. Log the band, reps, and final-set RIR; stop with about 2 good reps left.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+          "startsAfter": null,
+          "week4Prescription": "2 × 4–8",
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "a-pushup",
+          "name": "Push-up",
+          "prescription": "3 × 8–15",
+          "restSeconds": 90,
+          "cue": "Keep ribs controlled and move chest and hips together. Elevate hands if needed.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": "2 × 8–15",
+          "omitInWeek4": false
+        },
+        {
+          "order": 4,
+          "id": "a-split-squat",
+          "name": "Bulgarian split squat",
+          "prescription": "3 × 8–12 / side",
+          "restSeconds": 90,
+          "cue": "Left plus right equals one set; rest 90 seconds after both sides and alternate the starting side. Use stable support.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=-4LVK1crLSw",
+          "startsAfter": null,
+          "week4Prescription": "2 × 8–12 / side",
+          "omitInWeek4": false
+        },
+        {
+          "order": 5,
+          "id": "a-hinge",
+          "name": "Band Romanian deadlift",
+          "prescription": "3 × 10–15",
+          "restSeconds": 90,
+          "cue": "Added after your first-session review to cover the missing hip hinge. Start on your next Day 1; push the hips back with a neutral trunk and keep about 2 reps in reserve.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-27",
+          "week4Prescription": "2 × 10–15",
+          "omitInWeek4": false
+        },
+        {
+          "order": 6,
+          "id": "a-row",
+          "name": "Resistance-band row",
+          "prescription": "2 × 10–15",
+          "restSeconds": 75,
+          "cue": "Anchor the band securely. Pause briefly with shoulder blades drawn back.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=LSkyinhmA8k",
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 7,
+          "id": "a-core",
+          "name": "Plank or hollow hold",
+          "prescription": "2 × 20–40 sec",
+          "restSeconds": 60,
+          "cue": "Choose plank or hollow hold once and keep that variation for the block. End before trunk position changes.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 8,
+          "id": "a-walk",
+          "name": "Brisk cooldown walk",
+          "prescription": "10 min",
+          "restSeconds": null,
+          "cue": "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. Otherwise keep it light for recovery.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "weekday": "Tuesday",
+      "title": "Aerobic base",
+      "eyebrow": "Walk / jog · mobility",
+      "duration": "45–50 min",
+      "intensity": "Easy to moderate",
+      "summary": "Build the weekly aerobic target without compromising the next strength session.",
+      "strengthDay": false,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "b-cardio",
+          "name": "Brisk walk or easy jog/walk",
+          "prescription": "40 min",
+          "restSeconds": null,
+          "cue": "Aim for about 5–6/10 effort: able to talk but not sing. Log time, distance or pace, and the talk test.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "b-hip",
+          "name": "Hip-flexor mobility",
+          "prescription": "2 × 45 sec / side",
+          "restSeconds": null,
+          "cue": "Use a gentle stretch, not a forced end range.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "b-chest",
+          "name": "Chest and shoulder mobility",
+          "prescription": "2 × 45 sec",
+          "restSeconds": null,
+          "cue": "Move slowly and stay below painful range.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 4,
+          "id": "b-hang",
+          "name": "Relaxed dead hang",
+          "prescription": "2 × 15–30 sec",
+          "restSeconds": 90,
+          "cue": "Optional. Finish with clear grip reserve; skip if Monday recovery is incomplete or it may compromise Wednesday.",
+          "optional": true,
+          "demoUrl": "https://www.youtube.com/watch?v=dOCQjaasbGs",
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": true
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "weekday": "Wednesday",
+      "title": "Strength B",
+      "eyebrow": "Pull · shoulders · posterior chain",
+      "duration": "45–55 min",
+      "intensity": "Leave 2 reps in reserve",
+      "summary": "A second balanced strength exposure with a different push and leg emphasis.",
+      "strengthDay": true,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "c-warmup",
+          "name": "Movement warm-up",
+          "prescription": "6 min",
+          "restSeconds": null,
+          "cue": "Walk, shoulder circles, 6 scapular pulls, 8 scapular push-ups, 10 squats.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "c-pullup",
+          "name": "Band-assisted pull-up",
+          "prescription": "3 × 4–8",
+          "restSeconds": 120,
+          "cue": "Match Day 1 band and setup. Log every set and final-set RIR; do not reduce assistance mid-session to chase reps.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+          "startsAfter": null,
+          "week4Prescription": "2 × 4–8",
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "c-pike",
+          "name": "Pike push-up",
+          "prescription": "3 × 5–10",
+          "restSeconds": 90,
+          "cue": "Elevate the hands or reduce the pike angle if head-and-shoulder control is poor.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": "2 × 5–10",
+          "omitInWeek4": false
+        },
+        {
+          "order": 4,
+          "id": "c-squat",
+          "name": "Squat or backpack squat",
+          "prescription": "3 × 12–20",
+          "restSeconds": 90,
+          "cue": "Choose one repeatable variation. Use bodyweight unless a securely loadable backpack is confirmed.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": "2 × 12–20",
+          "omitInWeek4": false
+        },
+        {
+          "order": 5,
+          "id": "c-bridge",
+          "name": "Glute bridge",
+          "prescription": "3 × 12–20",
+          "restSeconds": 75,
+          "cue": "Finish with the hips, not by arching the lower back.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": "2 × 12–20",
+          "omitInWeek4": false
+        },
+        {
+          "order": 6,
+          "id": "c-face-pull",
+          "name": "Band pull-apart",
+          "prescription": "2 × 12–20",
+          "restSeconds": 60,
+          "cue": "Use an inspected band below face level at 2–3 RIR. Use a wider grip or less stretch to regress; omit it if tension cannot be scaled safely.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 7,
+          "id": "c-side-plank",
+          "name": "Side plank",
+          "prescription": "2 × 20–40 sec / side",
+          "restSeconds": 60,
+          "cue": "Left plus right equals one set; rest 60 seconds after both sides. Shorten the lever if the hips cannot stay stacked.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 8,
+          "id": "c-walk",
+          "name": "Brisk cooldown walk",
+          "prescription": "10 min",
+          "restSeconds": null,
+          "cue": "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. This is not an interval workout.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "weekday": "Thursday",
+      "title": "Recovery",
+      "eyebrow": "Walk · reset",
+      "duration": "35–40 min",
+      "intensity": "Easy",
+      "summary": "A genuine low-load day between strength sessions. Recovery is part of the program.",
+      "strengthDay": false,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "d-walk",
+          "name": "Brisk walk",
+          "prescription": "30 min",
+          "restSeconds": null,
+          "cue": "Keep this genuinely light and comfortable enough to feel better afterward; do not count it as moderate minutes.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "d-mobility",
+          "name": "Easy mobility flow",
+          "prescription": "5–8 min",
+          "restSeconds": null,
+          "cue": "Choose hips, ankles, chest, and shoulders. No aggressive stretching.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "d-breath",
+          "name": "Slow breathing reset",
+          "prescription": "2 min",
+          "restSeconds": null,
+          "cue": "Long, relaxed exhales. Finish the session calmer than you started.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "weekday": "Friday",
+      "title": "Strength C",
+      "eyebrow": "Full body · pull-up skill",
+      "duration": "45–60 min",
+      "intensity": "Clean practice, not a test",
+      "summary": "The third strength exposure keeps weekly volume productive without turning Friday into a max-out.",
+      "strengthDay": true,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "e-warmup",
+          "name": "Movement warm-up",
+          "prescription": "6 min",
+          "restSeconds": null,
+          "cue": "Walk, shoulder circles, 6 scapular pulls, 8 scapular push-ups, 10 squats.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "e-pullup",
+          "name": "Band-assisted pull-up",
+          "prescription": "3 × 4–8",
+          "restSeconds": 120,
+          "cue": "Keep two reps in reserve. Use the same band and setup for all sets; log every set and final-set RIR.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
+          "startsAfter": null,
+          "week4Prescription": "2 × 4–8",
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "e-negative",
+          "name": "Controlled negative pull-up",
+          "prescription": "2 × 2 at 3–5 sec",
+          "restSeconds": 120,
+          "cue": "Optional and gated: only if you can control the full descent without shoulder, elbow, or forearm pain.",
+          "optional": true,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": true
+        },
+        {
+          "order": 4,
+          "id": "e-pushup",
+          "name": "Push-up",
+          "prescription": "3 × 8–15",
+          "restSeconds": 90,
+          "cue": "Use a repeatable variation. No need to train to failure.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": "2 × 8–15",
+          "omitInWeek4": false
+        },
+        {
+          "order": 5,
+          "id": "e-split-squat",
+          "name": "Bulgarian split squat",
+          "prescription": "3 × 8–12 / side",
+          "restSeconds": 90,
+          "cue": "Left plus right equals one set; rest 90 seconds after both sides and alternate the starting side. Add only verified secure load.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=-4LVK1crLSw",
+          "startsAfter": null,
+          "week4Prescription": "2 × 8–12 / side",
+          "omitInWeek4": false
+        },
+        {
+          "order": 6,
+          "id": "e-row",
+          "name": "Resistance-band row",
+          "prescription": "2 × 10–15",
+          "restSeconds": 75,
+          "cue": "Use a secure anchor and a controlled return.",
+          "optional": false,
+          "demoUrl": "https://www.youtube.com/watch?v=LSkyinhmA8k",
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 7,
+          "id": "e-calf",
+          "name": "Calf raise",
+          "prescription": "2 × 15–25",
+          "restSeconds": 60,
+          "cue": "Use support for balance and pause briefly at the top.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 8,
+          "id": "e-core",
+          "name": "Hollow hold",
+          "prescription": "2 × 20–40 sec",
+          "restSeconds": 60,
+          "cue": "Bend the knees or keep the arms by your sides to preserve position.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 9,
+          "id": "e-walk",
+          "name": "Brisk cooldown walk",
+          "prescription": "10 min",
+          "restSeconds": null,
+          "cue": "If counting it as moderate: about 5–6/10 effort, able to talk but not sing. Otherwise keep it light.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "weekday": "Saturday",
+      "title": "Long easy cardio",
+      "eyebrow": "Aerobic base · balance",
+      "duration": "55–65 min",
+      "intensity": "Easy to moderate",
+      "summary": "Complete the aerobic target with low-skill work that should not leave you depleted.",
+      "strengthDay": false,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "f-cardio",
+          "name": "Brisk walk",
+          "prescription": "50 min",
+          "restSeconds": null,
+          "cue": "Aim for about 5–6/10 effort, able to talk but not sing, and log pace or distance. Jog/walk only if already adapted.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "f-balance",
+          "name": "Single-leg balance",
+          "prescription": "2 × 30 sec / side",
+          "restSeconds": null,
+          "cue": "Keep a wall or stable support within reach.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 3,
+          "id": "f-mobility",
+          "name": "Comfortable mobility",
+          "prescription": "5–8 min",
+          "restSeconds": null,
+          "cue": "Focus on whatever feels restricted after the week.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "weekday": "Sunday",
+      "title": "Full rest",
+      "eyebrow": "Recover · review",
+      "duration": "No session required",
+      "intensity": "Rest",
+      "summary": "No catch-up workout. Normal daily movement is enough; review the week and begin fresh tomorrow.",
+      "strengthDay": false,
+      "exercises": [
+        {
+          "order": 1,
+          "id": "g-rest",
+          "name": "Rest from planned training",
+          "prescription": "All day",
+          "restSeconds": null,
+          "cue": "A casual walk is fine, but it is not a requirement and does not need to be intense.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 2,
+          "id": "g-review",
+          "name": "Two-minute weekly review",
+          "prescription": "Optional",
+          "restSeconds": null,
+          "cue": "Note pain, energy, and which band you used before the next week begins.",
+          "optional": true,
+          "demoUrl": null,
+          "startsAfter": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        }
+      ]
+    }
+  ]
+}
