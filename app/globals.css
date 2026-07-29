@@ -503,6 +503,13 @@ footer {
   letter-spacing: 0.04em;
 }
 
+.session-meta span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  white-space: nowrap;
+}
+
 .status-box {
   margin-top: 22px;
   padding: 16px;
@@ -1697,6 +1704,7 @@ body {
   color: var(--paper);
   cursor: pointer;
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 9px;
@@ -1842,6 +1850,8 @@ body {
 .export-meta {
   padding: 0 0 34px;
   display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 12px;
 }
 
@@ -1851,8 +1861,12 @@ body {
   border-radius: 999px;
   background: rgba(217, 255, 67, 0.08);
   color: #d9ff43;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
   font-size: 16px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .export-exercises {
@@ -2146,6 +2160,7 @@ body::selection {
   color: #141513;
   cursor: pointer;
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 9px;

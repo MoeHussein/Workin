@@ -48,6 +48,9 @@ test("removes starter-only product artifacts", async () => {
   assert.match(page, /workin-week-\$\{weekStart\}\.pdf/);
   assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?flex: 0 0 auto;/);
   assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.session-meta span \{[\s\S]*?flex: 0 0 auto;/);
+  assert.match(css, /\.session-meta span \{[\s\S]*?white-space: nowrap;/);
+  assert.match(css, /\.export-meta span \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.download-workout-button \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.download-complete-button \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.download-arrow::before \{[\s\S]*?rotate\(45deg\)/);
