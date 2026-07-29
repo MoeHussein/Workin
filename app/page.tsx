@@ -740,7 +740,7 @@ export default function Home() {
         <div>
           <Image
             className="brand-logo footer-brand-logo"
-            src="/workin-logo.svg"
+            src="/workin-logo-footer.svg"
             alt="Workin"
             width={58}
             height={47}

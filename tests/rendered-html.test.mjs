@@ -12,6 +12,7 @@ test("builds a deployable worker and completed workout product shell", async () 
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(page, /Plan guide/);
   assert.match(page, /src="\/workin-logo\.svg"/);
+  assert.match(page, /src="\/workin-logo-footer\.svg"/);
   assert.equal((page.match(/\bunoptimized\b/g) ?? []).length, 4);
   assert.match(page, /Complete this session/);
   assert.match(page, /Download today’s workout/);
@@ -42,6 +43,10 @@ test("removes starter-only product artifacts", async () => {
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(layout, /\/favicon\.svg/);
   await access(new URL("../public/workin-logo.svg", import.meta.url));
+  assert.match(
+    await readFile(new URL("../public/workin-logo-footer.svg", import.meta.url), "utf8"),
+    /fill="#141513"/,
+  );
   await access(new URL("../public/favicon.svg", import.meta.url));
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.match(packageJson, /"html-to-image": "1\.11\.13"/);
