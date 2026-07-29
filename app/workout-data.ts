@@ -7,6 +7,7 @@ export type Exercise = {
   optional?: boolean;
   demoUrl?: string;
   startsAfter?: string;
+  endsOn?: string;
   week4Prescription?: string;
   omitInWeek4?: boolean;
 };
@@ -36,7 +37,7 @@ export const workoutDays: WorkoutDay[] = [
     day: 1,
     title: "Strength A",
     eyebrow: "Pull · push · legs",
-    duration: "50–60 min",
+    duration: "55–65 min",
     intensity: "Leave 2 reps in reserve",
     summary:
       "Every major movement pattern, with clean assisted pull-up volume and enough recovery to improve.",
@@ -97,6 +98,23 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "2 × 20–40 sec",
         restSeconds: 60,
         cue: "Choose plank or hollow hold once and keep that variation for the block. End before trunk position changes.",
+        endsOn: "2026-07-29",
+      },
+      {
+        id: "a-reverse-crunch",
+        name: "Reverse crunch",
+        prescription: "2 × 10–15",
+        restSeconds: 60,
+        cue: "Curl the pelvis toward the ribs without swinging. Stop before the lower back loses control.",
+        startsAfter: "2026-07-29",
+      },
+      {
+        id: "a-lateral-raise",
+        name: "Band lateral raise",
+        prescription: "2 × 12–20",
+        restSeconds: 60,
+        cue: "Use light tension, raise with control to about shoulder height, and keep 2–3 reps in reserve.",
+        startsAfter: "2026-07-29",
       },
       {
         id: "a-walk",
@@ -110,7 +128,7 @@ export const workoutDays: WorkoutDay[] = [
     day: 2,
     title: "Aerobic base",
     eyebrow: "Walk / jog · mobility",
-    duration: "45–50 min",
+    duration: "50–55 min",
     intensity: "Easy to moderate",
     summary:
       "Build the weekly aerobic target without compromising the next strength session.",
@@ -135,6 +153,14 @@ export const workoutDays: WorkoutDay[] = [
         cue: "Move slowly and stay below painful range.",
       },
       {
+        id: "b-external-rotation",
+        name: "No-anchor band external rotation",
+        prescription: "2 × 12–20",
+        restSeconds: 60,
+        cue: "Keep elbows near your sides and use a small pain-free range with light tension. This is controlled shoulder work, not a max effort.",
+        startsAfter: "2026-07-29",
+      },
+      {
         id: "b-hang",
         name: "Relaxed dead hang",
         prescription: "2 × 15–30 sec",
@@ -150,7 +176,7 @@ export const workoutDays: WorkoutDay[] = [
     day: 3,
     title: "Strength B",
     eyebrow: "Pull · shoulders · posterior chain",
-    duration: "45–55 min",
+    duration: "50–60 min",
     intensity: "Leave 2 reps in reserve",
     summary:
       "A second balanced strength exposure with a different push and leg emphasis.",
@@ -194,6 +220,15 @@ export const workoutDays: WorkoutDay[] = [
         restSeconds: 75,
         cue: "Finish with the hips, not by arching the lower back.",
         week4Prescription: "2 × 12–20",
+        endsOn: "2026-07-29",
+      },
+      {
+        id: "c-hamstring-curl",
+        name: "Standing band hamstring curl",
+        prescription: "2 × 10–15 / side",
+        restSeconds: 60,
+        cue: "Use an inspected band and secure low anchor. Left plus right equals one set; keep the hips still and stop if the band or anchor can slip.",
+        startsAfter: "2026-07-29",
       },
       {
         id: "c-face-pull",
@@ -208,6 +243,14 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "2 × 20–40 sec / side",
         restSeconds: 60,
         cue: "Left plus right equals one set; rest 60 seconds after both sides. Shorten the lever if the hips cannot stay stacked.",
+      },
+      {
+        id: "c-curl",
+        name: "Band curl",
+        prescription: "2 × 8–15",
+        restSeconds: 60,
+        cue: "Keep the upper arms still and use the same band and setup. Finish with about 2 reps in reserve.",
+        startsAfter: "2026-07-29",
       },
       {
         id: "c-walk",
@@ -251,7 +294,7 @@ export const workoutDays: WorkoutDay[] = [
     day: 5,
     title: "Strength C",
     eyebrow: "Full body · pull-up skill",
-    duration: "45–60 min",
+    duration: "50–65 min",
     intensity: "Clean practice, not a test",
     summary:
       "The third strength exposure keeps weekly volume productive without turning Friday into a max-out.",
@@ -288,6 +331,16 @@ export const workoutDays: WorkoutDay[] = [
         restSeconds: 90,
         cue: "Use a repeatable variation. No need to train to failure.",
         week4Prescription: "2 × 8–15",
+        endsOn: "2026-07-29",
+      },
+      {
+        id: "e-dip",
+        name: "Assisted parallel-bar dip",
+        prescription: "3 × 5–10",
+        restSeconds: 120,
+        cue: "Use band or foot assistance as needed to keep 2–3 reps in reserve. Use stable bars, controlled depth, and stop for shoulder or sternum pain.",
+        startsAfter: "2026-07-29",
+        week4Prescription: "2 × 5–10",
       },
       {
         id: "e-split-squat",
@@ -314,6 +367,14 @@ export const workoutDays: WorkoutDay[] = [
         cue: "Use support for balance and pause briefly at the top.",
       },
       {
+        id: "e-tibialis",
+        name: "Wall tibialis raise",
+        prescription: "2 × 15–25",
+        restSeconds: 60,
+        cue: "Keep heels down, lift the forefoot under control, and avoid rocking.",
+        startsAfter: "2026-07-29",
+      },
+      {
         id: "e-core",
         name: "Hollow hold",
         prescription: "2 × 20–40 sec",
@@ -332,7 +393,7 @@ export const workoutDays: WorkoutDay[] = [
     day: 6,
     title: "Long easy cardio",
     eyebrow: "Aerobic base · balance",
-    duration: "55–65 min",
+    duration: "60–70 min",
     intensity: "Easy to moderate",
     summary:
       "Complete the aerobic target with low-skill work that should not leave you depleted.",
@@ -349,6 +410,14 @@ export const workoutDays: WorkoutDay[] = [
         name: "Single-leg balance",
         prescription: "2 × 30 sec / side",
         cue: "Keep a wall or stable support within reach.",
+      },
+      {
+        id: "f-lateral-walk",
+        name: "Band lateral walk",
+        prescription: "2 × 10–15 steps / side",
+        restSeconds: 60,
+        cue: "Use light tension and controlled steps with knees tracking over the feet. Stop well before fatigue changes your gait.",
+        startsAfter: "2026-07-29",
       },
       {
         id: "f-mobility",

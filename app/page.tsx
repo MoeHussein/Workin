@@ -47,8 +47,16 @@ function pdfText(value: string) {
   return value.replace(/[–—−]/g, "-").replace(/\u00a0/g, " ");
 }
 
-function getExercisesForWeek(exercises: Exercise[], cycleWeek: number) {
+function getExercisesForWeek(
+  exercises: Exercise[],
+  cycleWeek: number,
+  scheduledDate?: string,
+) {
   return exercises
+    .filter(
+      (exercise) =>
+        !scheduledDate || !exercise.endsOn || scheduledDate <= exercise.endsOn,
+    )
     .filter((exercise) => cycleWeek !== 4 || !exercise.omitInWeek4)
     .map((exercise) =>
       cycleWeek === 4 && exercise.week4Prescription
@@ -321,7 +329,11 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, [timerRunning]);
 
-  const displayExercises = getExercisesForWeek(day.exercises, cycleWeek);
+  const displayExercises = getExercisesForWeek(
+    day.exercises,
+    cycleWeek,
+    selectedDate,
+  );
   const activeExercises = displayExercises.filter(
     (exercise) => !exercise.startsAfter || selectedDate > exercise.startsAfter,
   );
@@ -512,7 +524,7 @@ export default function Home() {
                     <div className="exercise-title-row">
                       <h3>{exercise.name}</h3>
                       {exercise.optional && <span className="optional-tag">OPTIONAL</span>}
-                      {deferred && <span className="optional-tag next-tag">NEXT DAY 1</span>}
+                      {deferred && <span className="optional-tag next-tag">STARTS NEXT TIME</span>}
                     </div>
                     <strong>{exercise.prescription}</strong>
                     <p>{exercise.cue}</p>
@@ -691,10 +703,11 @@ export default function Home() {
           </article>
           <article className="audit-card changed">
             <span className="audit-type">PROGRAM CHANGE</span>
-            <h3>The genuine hinge gap was fixed without adding junk volume.</h3>
+            <h3>Coverage expanded without turning every day into bodybuilding.</h3>
             <p>
-              The band Romanian deadlift now covers the missing posterior-chain pattern. Negatives
-              remain optional and the rest of the recoverable weekly workload stays in place.
+              Substitutions add dips, reverse crunches, and knee-flexion hamstring work. Small
+              lateral-delt, biceps, shoulder-control, tibialis, and hip-abduction accessories are
+              distributed from Monday to Saturday; Sunday remains full rest.
             </p>
           </article>
         </div>
@@ -795,7 +808,7 @@ export default function Home() {
 
           <div className="export-meta">
             <span>{day.duration}</span>
-            <span>{day.intensity}</span>
+            <span>{displayedIntensity}</span>
             <span>{guidance.label}</span>
           </div>
 
@@ -828,9 +841,14 @@ export default function Home() {
           const scheduledExercises = getExercisesForWeek(
             weeklyDay.exercises,
             cycleWeek,
+            scheduledDate,
           ).filter(
             (exercise) => !exercise.startsAfter || scheduledDate > exercise.startsAfter,
           );
+          const weeklyIntensity =
+            cycleWeek === 4 && weeklyDay.strengthDay
+              ? "Leave about 3 reps in reserve"
+              : weeklyDay.intensity;
           const scheduledDateLabel = scheduledDate
             ? fullDateFormatter.format(parseDateKey(scheduledDate))
             : `Day ${weeklyDay.day}`;
@@ -869,7 +887,7 @@ export default function Home() {
 
               <div className="weekly-pdf-meta">
                 <span>{pdfText(weeklyDay.duration)}</span>
-                <span>{pdfText(weeklyDay.intensity)}</span>
+                <span>{pdfText(weeklyIntensity)}</span>
                 <span>{pdfText(guidance.label)}</span>
               </div>
 

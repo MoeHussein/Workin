@@ -69,6 +69,22 @@ const weekdays = [
   "Saturday",
   "Sunday",
 ];
+const coverageRevisionEffectiveAfter = "2026-07-29";
+const currentPlanDate = "2026-07-30";
+const exerciseRecordCount = workoutDays.reduce(
+  (total, day) => total + day.exercises.length,
+  0,
+);
+const currentExerciseCount = workoutDays.reduce(
+  (total, day) =>
+    total +
+    day.exercises.filter(
+      (exercise) =>
+        (!exercise.startsAfter || currentPlanDate > exercise.startsAfter) &&
+        (!exercise.endsOn || currentPlanDate <= exercise.endsOn),
+    ).length,
+  0,
+);
 
 const traineeProfile = {
   provenance: {
@@ -222,6 +238,13 @@ const traineeProfile = {
         reason:
           "Preserve the record of what the user actually completed versus the current plan.",
       },
+      {
+        effectiveAfter: coverageRevisionEffectiveAfter,
+        change:
+          "A whole-body coverage revision replaced redundant exercises with dips, reverse crunches, and knee-flexion hamstring work, then added a small accessory layer for lateral deltoids, biceps, shoulder external rotation, tibialis anterior, and hip abductors.",
+        reason:
+          "Address meaningful coverage and calisthenics-skill gaps while preserving three primary strength days, low-fatigue aerobic or recovery days, and Sunday as full rest.",
+      },
     ],
   },
 };
@@ -249,7 +272,7 @@ const coachInterpretation = {
     "The reported working sets were approximately one to three repetitions in reserve. A session feeling easy does not by itself establish that more volume is required.",
     "Band-assisted pull-ups remain the current volume progression while maximum unassisted pull-up capacity is approximately two to three repetitions.",
     "Power work should be evaluated as a progression pathway after the reviewer checks foundational strength, landing or deceleration control, and recovery.",
-    "Available park equipment creates future exercise options, but substitutions or additions should be introduced deliberately and then evaluated.",
+    "Targeted accessories were introduced through substitutions and minimal additions; their value should now be judged from performance, technique, and recovery logs rather than by adding more exercises immediately.",
   ],
 };
 
@@ -307,6 +330,15 @@ const validationReadiness = {
         "What is the current maximum number of clean push-ups using a consistent technique standard?",
       whyItMatters:
         "It helps calibrate push-up variations and working-set targets.",
+    },
+    {
+      id: "dip-baseline",
+      priority: "high",
+      neededForInitialReview: true,
+      question:
+        "How many clean, pain-free parallel-bar dips can be performed, and what band or foot assistance is required to stay within the prescribed range?",
+      whyItMatters:
+        "Dip assistance and range of motion need calibration before progression.",
     },
     {
       id: "health-screen",
@@ -411,6 +443,9 @@ const exportData = {
     weekStartsOn: "Monday",
     cycleLengthWeeks: 4,
     dayCount: workoutDays.length,
+    coverageRevisionEffectiveAfter,
+    exerciseRecordCount,
+    currentExerciseCount,
     focus:
       "Pull-up development and general full-body fitness with strength, aerobic, recovery, and rest days.",
   },
@@ -439,7 +474,7 @@ const exportData = {
     intendedUse:
       "Shareable plan snapshot for review by qualified fitness professionals or AI systems.",
     includes:
-      "Trainee profile, explicit calculations, current-block feedback, validation questions, program structure, weekday schedule, exercise dosage, rest periods, coaching cues, optional status, demonstration links, activation dates, and four-week progression guidance.",
+      "Trainee profile, explicit calculations, current-block feedback, validation questions, program structure, weekday schedule, exercise dosage, rest periods, coaching cues, optional status, demonstration links, activation and end dates, and four-week progression guidance.",
     excludes:
       "Medical diagnosis, clinical clearance, independently verified performance, video-based technique assessment, measured body-fat percentage, and verified calorie intake.",
     disclaimer:
@@ -466,6 +501,7 @@ const exportData = {
       optional: exercise.optional ?? false,
       demoUrl: exercise.demoUrl ?? null,
       startsAfter: exercise.startsAfter ?? null,
+      endsOn: exercise.endsOn ?? null,
       week4Prescription: exercise.week4Prescription ?? null,
       omitInWeek4: exercise.omitInWeek4 ?? false,
     })),

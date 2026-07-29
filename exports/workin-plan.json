@@ -4,11 +4,14 @@
     "id": "workin-four-week-pull-up-block",
     "name": "Workin",
     "title": "Four-week pull-up training block",
-    "scheduleVersion": 3,
+    "scheduleVersion": 4,
     "programStartDate": "2026-07-27",
     "weekStartsOn": "Monday",
     "cycleLengthWeeks": 4,
     "dayCount": 7,
+    "coverageRevisionEffectiveAfter": "2026-07-29",
+    "exerciseRecordCount": 45,
+    "currentExerciseCount": 42,
     "focus": "Pull-up development and general full-body fitness with strength, aerobic, recovery, and rest days."
   },
   "dataProvenance": {
@@ -169,6 +172,11 @@
           "effectiveAfter": "2026-07-27",
           "change": "A hinge movement was added after review of the first Strength A session.",
           "reason": "Preserve the record of what the user actually completed versus the current plan."
+        },
+        {
+          "effectiveAfter": "2026-07-29",
+          "change": "A whole-body coverage revision replaced redundant exercises with dips, reverse crunches, and knee-flexion hamstring work, then added a small accessory layer for lateral deltoids, biceps, shoulder external rotation, tibialis anterior, and hip abductors.",
+          "reason": "Address meaningful coverage and calisthenics-skill gaps while preserving three primary strength days, low-fatigue aerobic or recovery days, and Sunday as full rest."
         }
       ]
     }
@@ -189,7 +197,7 @@
       "The reported working sets were approximately one to three repetitions in reserve. A session feeling easy does not by itself establish that more volume is required.",
       "Band-assisted pull-ups remain the current volume progression while maximum unassisted pull-up capacity is approximately two to three repetitions.",
       "Power work should be evaluated as a progression pathway after the reviewer checks foundational strength, landing or deceleration control, and recovery.",
-      "Available park equipment creates future exercise options, but substitutions or additions should be introduced deliberately and then evaluated."
+      "Targeted accessories were introduced through substitutions and minimal additions; their value should now be judged from performance, technique, and recovery logs rather than by adding more exercises immediately."
     ]
   },
   "validationReadiness": {
@@ -240,6 +248,13 @@
         "neededForInitialReview": true,
         "question": "What is the current maximum number of clean push-ups using a consistent technique standard?",
         "whyItMatters": "It helps calibrate push-up variations and working-set targets."
+      },
+      {
+        "id": "dip-baseline",
+        "priority": "high",
+        "neededForInitialReview": true,
+        "question": "How many clean, pain-free parallel-bar dips can be performed, and what band or foot assistance is required to stay within the prescribed range?",
+        "whyItMatters": "Dip assistance and range of motion need calibration before progression."
       },
       {
         "id": "health-screen",
@@ -315,7 +330,7 @@
   },
   "reviewScope": {
     "intendedUse": "Shareable plan snapshot for review by qualified fitness professionals or AI systems.",
-    "includes": "Trainee profile, explicit calculations, current-block feedback, validation questions, program structure, weekday schedule, exercise dosage, rest periods, coaching cues, optional status, demonstration links, activation dates, and four-week progression guidance.",
+    "includes": "Trainee profile, explicit calculations, current-block feedback, validation questions, program structure, weekday schedule, exercise dosage, rest periods, coaching cues, optional status, demonstration links, activation and end dates, and four-week progression guidance.",
     "excludes": "Medical diagnosis, clinical clearance, independently verified performance, video-based technique assessment, measured body-fat percentage, and verified calorie intake.",
     "disclaimer": "This file describes a training plan. It is not medical care or individualized clinical advice."
   },
@@ -352,7 +367,7 @@
       "weekday": "Monday",
       "title": "Strength A",
       "eyebrow": "Pull · push · legs",
-      "duration": "50–60 min",
+      "duration": "55–65 min",
       "intensity": "Leave 2 reps in reserve",
       "summary": "Every major movement pattern, with clean assisted pull-up volume and enough recovery to improve.",
       "strengthDay": true,
@@ -367,6 +382,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -380,6 +396,7 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 4–8",
           "omitInWeek4": false
         },
@@ -393,6 +410,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 8–15",
           "omitInWeek4": false
         },
@@ -406,6 +424,7 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=-4LVK1crLSw",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 8–12 / side",
           "omitInWeek4": false
         },
@@ -419,6 +438,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": "2026-07-27",
+          "endsOn": null,
           "week4Prescription": "2 × 10–15",
           "omitInWeek4": false
         },
@@ -432,6 +452,7 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=LSkyinhmA8k",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -445,11 +466,40 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": "2026-07-29",
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
           "order": 8,
+          "id": "a-reverse-crunch",
+          "name": "Reverse crunch",
+          "prescription": "2 × 10–15",
+          "restSeconds": 60,
+          "cue": "Curl the pelvis toward the ribs without swinging. Stop before the lower back loses control.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 9,
+          "id": "a-lateral-raise",
+          "name": "Band lateral raise",
+          "prescription": "2 × 12–20",
+          "restSeconds": 60,
+          "cue": "Use light tension, raise with control to about shoulder height, and keep 2–3 reps in reserve.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 10,
           "id": "a-walk",
           "name": "Brisk cooldown walk",
           "prescription": "10 min",
@@ -458,6 +508,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }
@@ -468,7 +519,7 @@
       "weekday": "Tuesday",
       "title": "Aerobic base",
       "eyebrow": "Walk / jog · mobility",
-      "duration": "45–50 min",
+      "duration": "50–55 min",
       "intensity": "Easy to moderate",
       "summary": "Build the weekly aerobic target without compromising the next strength session.",
       "strengthDay": false,
@@ -483,6 +534,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -496,6 +548,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -509,11 +562,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
           "order": 4,
+          "id": "b-external-rotation",
+          "name": "No-anchor band external rotation",
+          "prescription": "2 × 12–20",
+          "restSeconds": 60,
+          "cue": "Keep elbows near your sides and use a small pain-free range with light tension. This is controlled shoulder work, not a max effort.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 5,
           "id": "b-hang",
           "name": "Relaxed dead hang",
           "prescription": "2 × 15–30 sec",
@@ -522,6 +590,7 @@
           "optional": true,
           "demoUrl": "https://www.youtube.com/watch?v=dOCQjaasbGs",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": true
         }
@@ -532,7 +601,7 @@
       "weekday": "Wednesday",
       "title": "Strength B",
       "eyebrow": "Pull · shoulders · posterior chain",
-      "duration": "45–55 min",
+      "duration": "50–60 min",
       "intensity": "Leave 2 reps in reserve",
       "summary": "A second balanced strength exposure with a different push and leg emphasis.",
       "strengthDay": true,
@@ -547,6 +616,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -560,6 +630,7 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 4–8",
           "omitInWeek4": false
         },
@@ -573,6 +644,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 5–10",
           "omitInWeek4": false
         },
@@ -586,6 +658,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 12–20",
           "omitInWeek4": false
         },
@@ -599,11 +672,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": "2026-07-29",
           "week4Prescription": "2 × 12–20",
           "omitInWeek4": false
         },
         {
           "order": 6,
+          "id": "c-hamstring-curl",
+          "name": "Standing band hamstring curl",
+          "prescription": "2 × 10–15 / side",
+          "restSeconds": 60,
+          "cue": "Use an inspected band and secure low anchor. Left plus right equals one set; keep the hips still and stop if the band or anchor can slip.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 7,
           "id": "c-face-pull",
           "name": "Band pull-apart",
           "prescription": "2 × 12–20",
@@ -612,11 +700,12 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
-          "order": 7,
+          "order": 8,
           "id": "c-side-plank",
           "name": "Side plank",
           "prescription": "2 × 20–40 sec / side",
@@ -625,11 +714,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
-          "order": 8,
+          "order": 9,
+          "id": "c-curl",
+          "name": "Band curl",
+          "prescription": "2 × 8–15",
+          "restSeconds": 60,
+          "cue": "Keep the upper arms still and use the same band and setup. Finish with about 2 reps in reserve.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 10,
           "id": "c-walk",
           "name": "Brisk cooldown walk",
           "prescription": "10 min",
@@ -638,6 +742,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }
@@ -663,6 +768,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -676,6 +782,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -689,6 +796,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }
@@ -699,7 +807,7 @@
       "weekday": "Friday",
       "title": "Strength C",
       "eyebrow": "Full body · pull-up skill",
-      "duration": "45–60 min",
+      "duration": "50–65 min",
       "intensity": "Clean practice, not a test",
       "summary": "The third strength exposure keeps weekly volume productive without turning Friday into a max-out.",
       "strengthDay": true,
@@ -714,6 +822,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -727,6 +836,7 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=aNUSgyWRJYA",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 4–8",
           "omitInWeek4": false
         },
@@ -740,6 +850,7 @@
           "optional": true,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": true
         },
@@ -753,11 +864,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": "2026-07-29",
           "week4Prescription": "2 × 8–15",
           "omitInWeek4": false
         },
         {
           "order": 5,
+          "id": "e-dip",
+          "name": "Assisted parallel-bar dip",
+          "prescription": "3 × 5–10",
+          "restSeconds": 120,
+          "cue": "Use band or foot assistance as needed to keep 2–3 reps in reserve. Use stable bars, controlled depth, and stop for shoulder or sternum pain.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": "2 × 5–10",
+          "omitInWeek4": false
+        },
+        {
+          "order": 6,
           "id": "e-split-squat",
           "name": "Bulgarian split squat",
           "prescription": "3 × 8–12 / side",
@@ -766,11 +892,12 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=-4LVK1crLSw",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": "2 × 8–12 / side",
           "omitInWeek4": false
         },
         {
-          "order": 6,
+          "order": 7,
           "id": "e-row",
           "name": "Resistance-band row",
           "prescription": "2 × 10–15",
@@ -779,11 +906,12 @@
           "optional": false,
           "demoUrl": "https://www.youtube.com/watch?v=LSkyinhmA8k",
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
-          "order": 7,
+          "order": 8,
           "id": "e-calf",
           "name": "Calf raise",
           "prescription": "2 × 15–25",
@@ -792,11 +920,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
-          "order": 8,
+          "order": 9,
+          "id": "e-tibialis",
+          "name": "Wall tibialis raise",
+          "prescription": "2 × 15–25",
+          "restSeconds": 60,
+          "cue": "Keep heels down, lift the forefoot under control, and avoid rocking.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 10,
           "id": "e-core",
           "name": "Hollow hold",
           "prescription": "2 × 20–40 sec",
@@ -805,11 +948,12 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
-          "order": 9,
+          "order": 11,
           "id": "e-walk",
           "name": "Brisk cooldown walk",
           "prescription": "10 min",
@@ -818,6 +962,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }
@@ -828,7 +973,7 @@
       "weekday": "Saturday",
       "title": "Long easy cardio",
       "eyebrow": "Aerobic base · balance",
-      "duration": "55–65 min",
+      "duration": "60–70 min",
       "intensity": "Easy to moderate",
       "summary": "Complete the aerobic target with low-skill work that should not leave you depleted.",
       "strengthDay": false,
@@ -843,6 +988,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -856,11 +1002,26 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
         {
           "order": 3,
+          "id": "f-lateral-walk",
+          "name": "Band lateral walk",
+          "prescription": "2 × 10–15 steps / side",
+          "restSeconds": 60,
+          "cue": "Use light tension and controlled steps with knees tracking over the feet. Stop well before fatigue changes your gait.",
+          "optional": false,
+          "demoUrl": null,
+          "startsAfter": "2026-07-29",
+          "endsOn": null,
+          "week4Prescription": null,
+          "omitInWeek4": false
+        },
+        {
+          "order": 4,
           "id": "f-mobility",
           "name": "Comfortable mobility",
           "prescription": "5–8 min",
@@ -869,6 +1030,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }
@@ -894,6 +1056,7 @@
           "optional": false,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         },
@@ -907,6 +1070,7 @@
           "optional": true,
           "demoUrl": null,
           "startsAfter": null,
+          "endsOn": null,
           "week4Prescription": null,
           "omitInWeek4": false
         }

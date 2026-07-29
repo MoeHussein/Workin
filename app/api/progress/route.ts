@@ -61,8 +61,11 @@ export async function GET(request: Request) {
     const now = new Date().toISOString();
     await db
       .insert(programSettings)
-      .values({ id: 1, startDate: anchor, scheduleVersion: 3, updatedAt: now })
-      .onConflictDoNothing();
+      .values({ id: 1, startDate: anchor, scheduleVersion: 4, updatedAt: now })
+      .onConflictDoUpdate({
+        target: programSettings.id,
+        set: { scheduleVersion: 4, updatedAt: now },
+      });
 
     const [settings, log, week] = await Promise.all([
       db.select().from(programSettings).where(eq(programSettings.id, 1)).limit(1),

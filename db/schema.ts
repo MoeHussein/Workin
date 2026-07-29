@@ -3,7 +3,7 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const programSettings = sqliteTable("program_settings", {
   id: integer("id").primaryKey(),
   startDate: text("start_date").notNull(),
-  scheduleVersion: integer("schedule_version").notNull().default(2),
+  scheduleVersion: integer("schedule_version").notNull().default(4),
   updatedAt: text("updated_at").notNull(),
 });
 

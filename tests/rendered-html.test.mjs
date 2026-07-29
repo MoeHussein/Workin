@@ -45,6 +45,15 @@ test("removes starter-only product artifacts", async () => {
     "utf8",
   );
   assert.match(workoutData, /name: "Band pull-apart"/);
+  assert.match(workoutData, /name: "Assisted parallel-bar dip"/);
+  assert.match(workoutData, /name: "Reverse crunch"/);
+  assert.match(workoutData, /name: "Standing band hamstring curl"/);
+  assert.match(workoutData, /name: "Band lateral raise"/);
+  assert.match(workoutData, /name: "Band curl"/);
+  assert.match(workoutData, /name: "No-anchor band external rotation"/);
+  assert.match(workoutData, /name: "Wall tibialis raise"/);
+  assert.match(workoutData, /name: "Band lateral walk"/);
+  assert.match(workoutData, /endsOn: "2026-07-29"/);
   assert.match(workoutData, /restSeconds: 90,[\s\S]*?omitInWeek4: true/);
   assert.match(workoutData, /able to talk but not sing/);
   assert.match(workoutData, /week4Prescription: "2 × 4–8"/);
@@ -110,7 +119,10 @@ test("exports the current plan as review-ready JSON", async () => {
   assert.equal(plan.schemaVersion, 2);
   assert.equal(plan.plan.programStartDate, "2026-07-27");
   assert.equal(plan.plan.weekStartsOn, "Monday");
-  assert.equal(plan.plan.scheduleVersion, 3);
+  assert.equal(plan.plan.scheduleVersion, 4);
+  assert.equal(plan.plan.coverageRevisionEffectiveAfter, "2026-07-29");
+  assert.equal(plan.plan.exerciseRecordCount, 45);
+  assert.equal(plan.plan.currentExerciseCount, 42);
   assert.equal(plan.traineeProfile.demographics.sex, "male");
   assert.equal(plan.traineeProfile.demographics.ageYears, 25);
   assert.equal(plan.traineeProfile.demographics.heightCm, 190);
@@ -125,7 +137,7 @@ test("exports the current plan as review-ready JSON", async () => {
   assert.ok(plan.validationReadiness.auditChecklist.length >= 10);
   assert.ok(plan.validationReadiness.openQuestions.length >= 8);
   assert.equal(plan.days.length, 7);
-  assert.equal(exerciseCount, 37);
+  assert.equal(exerciseCount, 45);
   assert.equal(plan.days[0].weekday, "Monday");
   assert.equal(plan.days[0].title, "Strength A");
   assert.equal(plan.days[0].exercises[1].week4Prescription, "2 × 4–8");
@@ -134,10 +146,31 @@ test("exports the current plan as review-ready JSON", async () => {
     "Band pull-apart",
   );
   assert.equal(
+    plan.days[0].exercises.find((exercise) => exercise.id === "a-core").endsOn,
+    "2026-07-29",
+  );
+  assert.equal(
+    plan.days[0].exercises.find((exercise) => exercise.id === "a-reverse-crunch")
+      .startsAfter,
+    "2026-07-29",
+  );
+  assert.equal(
+    plan.days[4].exercises.find((exercise) => exercise.id === "e-dip")
+      .week4Prescription,
+    "2 × 5–10",
+  );
+  assert.equal(
     plan.days[1].exercises.find((exercise) => exercise.id === "b-hang").omitInWeek4,
     true,
   );
   assert.equal(plan.days[6].weekday, "Sunday");
   assert.equal(plan.days[6].title, "Full rest");
+  assert.equal(plan.days[6].exercises.length, 2);
+  assert.equal(
+    plan.days[6].exercises.some(
+      (exercise) => exercise.startsAfter === "2026-07-29",
+    ),
+    false,
+  );
   assert.equal(plan.weekGuidance.length, 4);
 });
