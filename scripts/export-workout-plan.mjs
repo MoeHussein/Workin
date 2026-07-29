@@ -6,13 +6,11 @@ import { runInNewContext } from "node:vm";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const workoutDataPath = resolve(projectRoot, "app/workout-data.ts");
 const pagePath = resolve(projectRoot, "app/page.tsx");
-const apiPath = resolve(projectRoot, "app/api/progress/route.ts");
 const outputPath = resolve(projectRoot, "exports/workin-plan.json");
 
-const [workoutDataSource, pageSource, apiSource] = await Promise.all([
+const [workoutDataSource, pageSource] = await Promise.all([
   readFile(workoutDataPath, "utf8"),
   readFile(pagePath, "utf8"),
-  readFile(apiPath, "utf8"),
 ]);
 
 const rulesStart = workoutDataSource.indexOf("export const planRules");
@@ -54,7 +52,7 @@ const weekGuidance = runInNewContext(`(${guidanceLiteral})`, Object.create(null)
 const programStartDate =
   pageSource.match(/DEFAULT_PROGRAM_START = "(\d{4}-\d{2}-\d{2})"/)?.[1];
 const scheduleVersion =
-  apiSource.match(/scheduleVersion:\s*(\d+)/)?.[1];
+  workoutDataSource.match(/export const scheduleVersion =\s*(\d+)/)?.[1];
 
 if (!programStartDate || !scheduleVersion) {
   throw new Error("Could not locate the current program schedule metadata.");

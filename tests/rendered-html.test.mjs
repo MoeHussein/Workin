@@ -8,11 +8,11 @@ test("builds a deployable worker and completed workout product shell", async () 
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
 
-  await access(new URL("../dist/server/index.js", import.meta.url));
+  await access(new URL("../out/index.html", import.meta.url));
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(page, /Plan guide/);
-  assert.match(page, /src="\/workin-logo\.svg"/);
-  assert.match(page, /src="\/workin-logo-footer\.svg"/);
+  assert.match(page, /assetPath\("\/workin-logo\.svg"\)/);
+  assert.match(page, /assetPath\("\/workin-logo-footer\.svg"\)/);
   assert.equal((page.match(/\bunoptimized\b/g) ?? []).length, 4);
   assert.match(page, /Complete this session/);
   assert.match(page, /Download today’s workout/);
@@ -59,6 +59,8 @@ test("removes starter-only product artifacts", async () => {
   assert.match(workoutData, /week4Prescription: "2 × 4–8"/);
   assert.match(workoutData, /every working set reaches the top/);
   assert.match(page, /getExercisesForWeek/);
+  assert.match(page, /window\.localStorage/);
+  assert.match(page, /workin:progress:v4/);
   assert.match(page, /final-set RIR/);
   assert.match(page, /radiating, unstable/);
   assert.match(layout, /Workin — Four-week pull-up training block/);
@@ -89,22 +91,27 @@ test("removes starter-only product artifacts", async () => {
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
 });
 
-test("declares persistent D1 storage and the Monday-first schedule", async () => {
-  const [hostingText, scheduleMigration] = await Promise.all([
-    readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
+test("declares GitHub Pages deployment and browser-local persistence", async () => {
+  const [workflow, nextConfig, page] = await Promise.all([
     readFile(
-      new URL("../drizzle/0002_monday_schedule.sql", import.meta.url),
+      new URL("../.github/workflows/deploy-pages.yml", import.meta.url),
       "utf8",
     ),
+    readFile(new URL("../next.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
   ]);
-  const hosting = JSON.parse(hostingText);
-  assert.equal(hosting.d1, "DB");
-  assert.equal(hosting.r2, null);
-  assert.match(scheduleMigration, /`start_date` = '2026-07-27'/);
-  assert.match(scheduleMigration, /'2026-07-27',\s*1,\s*true/);
-  assert.match(scheduleMigration, /'2026-07-28',\s*2,\s*true/);
-  await access(new URL("../db/schema.ts", import.meta.url));
-  await access(new URL("../drizzle/0000_brief_shen.sql", import.meta.url));
+  assert.match(workflow, /actions\/deploy-pages@v4/);
+  assert.match(workflow, /NEXT_PUBLIC_BASE_PATH: \/Workin/);
+  assert.match(workflow, /path: \.\/out/);
+  assert.match(nextConfig, /output: "export"/);
+  assert.match(nextConfig, /basePath/);
+  assert.match(page, /window\.localStorage\.setItem/);
+  await assert.rejects(
+    access(new URL("../.openai/hosting.json", import.meta.url)),
+  );
+  await assert.rejects(
+    access(new URL("../app/api/progress/route.ts", import.meta.url)),
+  );
 });
 
 test("exports the current plan as review-ready JSON", async () => {

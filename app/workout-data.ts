@@ -23,6 +23,8 @@ export type WorkoutDay = {
   exercises: Exercise[];
 };
 
+export const scheduleVersion = 4;
+
 export const planRules = {
   progression:
     "Keep the variation, band, load, attachment, and setup consistent. Progress only when every working set reaches the top of its range with stable technique and the target effort in two comparable sessions. Both sides must qualify; change one variable, then return to the lower end of the range.",

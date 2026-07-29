@@ -3,7 +3,7 @@
 Workin is a phone-first calisthenics workout tracker built around a progressive
 four-week program.
 
-[Open the live website](https://pull04-moe-2026.dnamo.chatgpt.site/#today)
+[Open the live website](https://moehussein.github.io/Workin/#today)
 
 ## Features
 
@@ -14,7 +14,7 @@ four-week program.
 - Downloadable daily workout images
 - Downloadable complete weekly workout PDFs
 - Review-ready JSON plan export
-- Persistent workout logs through Cloudflare D1 on the hosted site
+- Private workout logs stored locally in the current browser
 
 ## Workout data
 
@@ -45,12 +45,17 @@ npm run export:plan
 npm test
 ```
 
+## Publishing
+
+Every push to `main` is built and deployed through GitHub Actions to GitHub
+Pages. The static deployment stores progress on the device, so workout history
+does not automatically sync between different browsers or phones.
+
 ## Stack
 
 - React and TypeScript
-- Vinext and Vite
-- Cloudflare Workers and D1
-- Drizzle ORM
+- Next.js static export
+- GitHub Pages and GitHub Actions
 
 ## Important note
 

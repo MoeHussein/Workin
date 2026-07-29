@@ -32,6 +32,23 @@ const emptyLog: WorkoutLog = {
 };
 
 const DEFAULT_PROGRAM_START = "2026-07-27";
+const STORAGE_KEY = "workin:progress:v4";
+const ASSET_PREFIX = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const assetPath = (path: string) => `${ASSET_PREFIX}${path}`;
+
+type WorkoutStore = {
+  programStart?: string;
+  logs?: Record<string, WorkoutLog>;
+};
+
+function readWorkoutStore(): WorkoutStore {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}");
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 const monthFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",
@@ -86,14 +103,13 @@ export default function Home() {
   const [weeklyPdfProgress, setWeeklyPdfProgress] = useState(0);
   const exportCardRef = useRef<HTMLElement>(null);
   const weeklyPdfRef = useRef<HTMLElement>(null);
-  const saveQueue = useRef<Promise<void>>(Promise.resolve());
-  const latestSaveId = useRef(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const today = toLocalDateKey(new Date());
+      const stored = readWorkoutStore();
       setSelectedDate(today);
-      setProgramStart(DEFAULT_PROGRAM_START);
+      setProgramStart(stored.programStart ?? DEFAULT_PROGRAM_START);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -115,84 +131,45 @@ export default function Home() {
 
   useEffect(() => {
     if (!selectedDate || !weekStart || !programStart) return;
-    const controller = new AbortController();
-
-    async function loadProgress() {
-      setLoadState("loading");
+    const timer = window.setTimeout(() => {
+      const stored = readWorkoutStore();
+      const logs = stored.logs ?? {};
+      setLog(logs[selectedDate] ?? emptyLog);
+      setWeeklyCompleted(
+        new Set(weekDates.filter((date) => Boolean(logs[date]?.completed))),
+      );
+      setLoadState("ready");
+      setSaveState("idle");
       setMessage("");
-      try {
-        const params = new URLSearchParams({
-          date: selectedDate,
-          weekStart,
-          anchor: programStart,
-        });
-        const response = await fetch(`/api/progress?${params}`, {
-          signal: controller.signal,
-        });
-        const data = (await response.json()) as {
-          error?: string;
-          log?: WorkoutLog | null;
-          settings?: { startDate?: string };
-          week?: { date: string; completed: boolean }[];
-        };
-        if (!response.ok) throw new Error(data.error || "Progress could not be loaded.");
-
-        setLog(data.log ?? emptyLog);
-        setProgramStart(data.settings?.startDate ?? programStart);
-        setWeeklyCompleted(
-          new Set((data.week ?? []).filter((item) => item.completed).map((item) => item.date)),
-        );
-        setLoadState("ready");
-        setSaveState("idle");
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setLoadState("error");
-        setMessage(error instanceof Error ? error.message : "Progress could not be loaded.");
-      }
-    }
-
-    void loadProgress();
-    return () => controller.abort();
-  }, [programStart, selectedDate, weekStart]);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [programStart, selectedDate, weekDates, weekStart]);
 
   const persist = useCallback(
     (snapshot: WorkoutLog) => {
       if (!selectedDate) return;
-      const saveId = ++latestSaveId.current;
       setSaveState("saving");
       setMessage("");
-
-      saveQueue.current = saveQueue.current
-        .catch(() => undefined)
-        .then(async () => {
-          const response = await fetch("/api/progress", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              date: selectedDate,
-              dayIndex,
-              ...snapshot,
-            }),
-          });
-          const data = (await response.json()) as { error?: string };
-          if (!response.ok) throw new Error(data.error || "Progress could not be saved.");
-
-          setWeeklyCompleted((current) => {
-            const next = new Set(current);
-            if (snapshot.completed) next.add(selectedDate);
-            else next.delete(selectedDate);
-            return next;
-          });
-          if (latestSaveId.current === saveId) setSaveState("saved");
-        })
-        .catch((error: unknown) => {
-          if (latestSaveId.current === saveId) {
-            setSaveState("error");
-            setMessage(error instanceof Error ? error.message : "Progress could not be saved.");
-          }
+      try {
+        const stored = readWorkoutStore();
+        const logs = { ...(stored.logs ?? {}), [selectedDate]: snapshot };
+        window.localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ programStart, logs }),
+        );
+        setWeeklyCompleted((current) => {
+          const next = new Set(current);
+          if (snapshot.completed) next.add(selectedDate);
+          else next.delete(selectedDate);
+          return next;
         });
+        setSaveState("saved");
+      } catch {
+        setSaveState("error");
+        setMessage("Progress could not be saved in this browser.");
+      }
     },
-    [dayIndex, selectedDate],
+    [programStart, selectedDate],
   );
 
   function updateLog(patch: Partial<WorkoutLog>, saveNow = true) {
@@ -358,7 +335,7 @@ export default function Home() {
         <a className="brand" href="#today" aria-label="Workin home">
           <Image
             className="brand-logo"
-            src="/workin-logo.svg"
+            src={assetPath("/workin-logo.svg")}
             alt="Workin"
             width={68}
             height={55}
@@ -773,7 +750,7 @@ export default function Home() {
         <div>
           <Image
             className="brand-logo footer-brand-logo"
-            src="/workin-logo-footer.svg"
+            src={assetPath("/workin-logo-footer.svg")}
             alt="Workin"
             width={58}
             height={47}
@@ -790,7 +767,7 @@ export default function Home() {
             <div className="export-brand">
               <Image
                 className="export-brand-logo"
-                src="/workin-logo.svg"
+                src={assetPath("/workin-logo.svg")}
                 alt="Workin"
                 width={78}
                 height={63}
@@ -863,7 +840,7 @@ export default function Home() {
                 <div className="weekly-pdf-brand">
                   <Image
                     className="weekly-pdf-brand-logo"
-                    src="/workin-logo.svg"
+                    src={assetPath("/workin-logo.svg")}
                     alt="Workin"
                     width={62}
                     height={50}
