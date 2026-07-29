@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     const now = new Date().toISOString();
     await db
       .insert(programSettings)
-      .values({ id: 1, startDate: anchor, scheduleVersion: 2, updatedAt: now })
+      .values({ id: 1, startDate: anchor, scheduleVersion: 3, updatedAt: now })
       .onConflictDoNothing();
 
     const [settings, log, week] = await Promise.all([

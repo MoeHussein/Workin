@@ -32,7 +32,7 @@ test("removes starter-only product artifacts", async () => {
   assert.match(page, /Training place/);
   assert.match(page, /Start \{exercise\.restSeconds\}s rest/);
   assert.match(page, /timer-orbit/);
-  assert.match(page, /DEFAULT_PROGRAM_START = "2026-07-28"/);
+  assert.match(page, /DEFAULT_PROGRAM_START = "2026-07-27"/);
   assert.match(
     await readFile(new URL("../app/workout-data.ts", import.meta.url), "utf8"),
     /Band Romanian deadlift/,
@@ -52,19 +52,20 @@ test("removes starter-only product artifacts", async () => {
   await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
 });
 
-test("declares persistent D1 storage", async () => {
+test("declares persistent D1 storage and the Monday-first schedule", async () => {
   const [hostingText, scheduleMigration] = await Promise.all([
     readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
     readFile(
-      new URL("../drizzle/0001_aspiring_red_skull.sql", import.meta.url),
+      new URL("../drizzle/0002_monday_schedule.sql", import.meta.url),
       "utf8",
     ),
   ]);
   const hosting = JSON.parse(hostingText);
   assert.equal(hosting.d1, "DB");
   assert.equal(hosting.r2, null);
-  assert.match(scheduleMigration, /`start_date` = '2026-07-28'/);
-  assert.match(scheduleMigration, /'2026-07-28',\s*1,\s*true/);
+  assert.match(scheduleMigration, /`start_date` = '2026-07-27'/);
+  assert.match(scheduleMigration, /'2026-07-27',\s*1,\s*true/);
+  assert.match(scheduleMigration, /'2026-07-28',\s*2,\s*true/);
   await access(new URL("../db/schema.ts", import.meta.url));
   await access(new URL("../drizzle/0000_brief_shen.sql", import.meta.url));
 });

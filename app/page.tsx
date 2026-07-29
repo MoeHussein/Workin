@@ -30,7 +30,7 @@ const emptyLog: WorkoutLog = {
   place: "",
 };
 
-const DEFAULT_PROGRAM_START = "2026-07-28";
+const DEFAULT_PROGRAM_START = "2026-07-27";
 const monthFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   day: "numeric",

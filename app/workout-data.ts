@@ -66,7 +66,7 @@ export const workoutDays: WorkoutDay[] = [
         prescription: "3 × 10–15",
         restSeconds: 90,
         cue: "Added after your first-session review to cover the missing hip hinge. Start on your next Day 1; push the hips back with a neutral trunk and keep about 2 reps in reserve.",
-        startsAfter: "2026-07-28",
+        startsAfter: "2026-07-27",
       },
       {
         id: "a-row",
