@@ -1062,6 +1062,10 @@ footer {
   gap: 24px;
 }
 
+.app-shell > footer {
+  color: #141513;
+}
+
 footer > div {
   display: flex;
   align-items: center;
