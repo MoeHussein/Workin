@@ -70,8 +70,19 @@ a {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
+}
+
+.brand-logo {
+  width: 68px;
+  height: 55px;
+  object-fit: contain;
+}
+
+.footer-brand-logo {
+  width: 58px;
+  height: 47px;
+  flex: 0 0 auto;
 }
 
 .brand-mark {
@@ -1792,21 +1803,10 @@ body {
   gap: 16px;
 }
 
-.export-brand span {
-  width: 54px;
-  height: 54px;
-  border-radius: 17px;
-  background: #d9ff43;
-  color: #141513;
-  display: grid;
-  place-items: center;
-  font-size: 25px;
-  font-weight: 900;
-}
-
-.export-brand strong {
-  font-size: 28px;
-  letter-spacing: -0.04em;
+.export-brand-logo {
+  width: 78px;
+  height: 63px;
+  object-fit: contain;
 }
 
 .export-header > p {
@@ -2282,27 +2282,10 @@ body::selection {
   gap: 13px;
 }
 
-.weekly-pdf-brand > span {
-  width: 45px;
-  height: 45px;
-  border-radius: 14px;
-  background: #d9ff43;
-  color: #141513;
-  display: grid;
-  place-items: center;
-  font-size: 21px;
-  font-weight: 900;
-}
-
-.weekly-pdf-brand > div {
-  display: grid;
-  gap: 2px;
-}
-
-.weekly-pdf-brand strong {
-  font-size: 22px;
-  line-height: 1;
-  letter-spacing: -0.04em;
+.weekly-pdf-brand-logo {
+  width: 62px;
+  height: 50px;
+  object-fit: contain;
 }
 
 .weekly-pdf-brand small {

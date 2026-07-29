@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addDays,
@@ -328,8 +329,14 @@ export default function Home() {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="#today" aria-label="Workin home">
-          <span className="brand-mark">W</span>
-          <span className="brand-name">Workin</span>
+          <Image
+            className="brand-logo"
+            src="/workin-logo.png"
+            alt="Workin"
+            width={68}
+            height={55}
+            priority
+          />
         </a>
         <a className="audit-link" href="#guide">
           Plan guide <span aria-hidden="true">↓</span>
@@ -730,7 +737,13 @@ export default function Home() {
 
       <footer>
         <div>
-          <span className="brand-mark">W</span>
+          <Image
+            className="brand-logo footer-brand-logo"
+            src="/workin-logo.png"
+            alt="Workin"
+            width={58}
+            height={47}
+          />
           <p>Workin · A practical four-week block. Not medical care or individualized coaching.</p>
         </div>
         <a href="#today">Back to today ↑</a>
@@ -740,8 +753,13 @@ export default function Home() {
         <article className="workout-export-card" ref={exportCardRef}>
           <header className="export-header">
             <div className="export-brand">
-              <span>W</span>
-              <strong>Workin</strong>
+              <Image
+                className="export-brand-logo"
+                src="/workin-logo.png"
+                alt="Workin"
+                width={78}
+                height={63}
+              />
             </div>
             <p>4-week pull-up block</p>
           </header>
@@ -799,11 +817,14 @@ export default function Home() {
             >
               <header className="weekly-pdf-header">
                 <div className="weekly-pdf-brand">
-                  <span>W</span>
-                  <div>
-                    <strong>Workin</strong>
-                    <small>Complete weekly workout</small>
-                  </div>
+                  <Image
+                    className="weekly-pdf-brand-logo"
+                    src="/workin-logo.png"
+                    alt="Workin"
+                    width={62}
+                    height={50}
+                  />
+                  <small>Complete weekly workout</small>
                 </div>
                 <p>WEEK {cycleWeek} / 4</p>
               </header>

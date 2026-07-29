@@ -23,6 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
+    icons: {
+      icon: [{ url: "/workin-favicon.png", type: "image/png", sizes: "512x512" }],
+      shortcut: "/workin-favicon.png",
+      apple: [{ url: "/workin-favicon.png", sizes: "512x512", type: "image/png" }],
+    },
     openGraph: {
       title,
       description,
