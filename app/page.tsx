@@ -331,11 +331,12 @@ export default function Home() {
         <a className="brand" href="#today" aria-label="Workin home">
           <Image
             className="brand-logo"
-            src="/workin-logo.png"
+            src="/workin-logo.svg"
             alt="Workin"
             width={68}
             height={55}
             priority
+            unoptimized
           />
         </a>
         <a className="audit-link" href="#guide">
@@ -739,10 +740,11 @@ export default function Home() {
         <div>
           <Image
             className="brand-logo footer-brand-logo"
-            src="/workin-logo.png"
+            src="/workin-logo.svg"
             alt="Workin"
             width={58}
             height={47}
+            unoptimized
           />
           <p>Workin · A practical four-week block. Not medical care or individualized coaching.</p>
         </div>
@@ -755,10 +757,11 @@ export default function Home() {
             <div className="export-brand">
               <Image
                 className="export-brand-logo"
-                src="/workin-logo.png"
+                src="/workin-logo.svg"
                 alt="Workin"
                 width={78}
                 height={63}
+                unoptimized
               />
             </div>
             <p>4-week pull-up block</p>
@@ -819,10 +822,11 @@ export default function Home() {
                 <div className="weekly-pdf-brand">
                   <Image
                     className="weekly-pdf-brand-logo"
-                    src="/workin-logo.png"
+                    src="/workin-logo.svg"
                     alt="Workin"
                     width={62}
                     height={50}
+                    unoptimized
                   />
                   <small>Complete weekly workout</small>
                 </div>

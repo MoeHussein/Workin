@@ -11,7 +11,8 @@ test("builds a deployable worker and completed workout product shell", async () 
   await access(new URL("../dist/server/index.js", import.meta.url));
   assert.match(layout, /Workin — Four-week pull-up training block/);
   assert.match(page, /Plan guide/);
-  assert.match(page, /src="\/workin-logo\.png"/);
+  assert.match(page, /src="\/workin-logo\.svg"/);
+  assert.equal((page.match(/\bunoptimized\b/g) ?? []).length, 4);
   assert.match(page, /Complete this session/);
   assert.match(page, /Download today’s workout/);
   assert.match(page, /Download complete workout/);
@@ -39,9 +40,9 @@ test("removes starter-only product artifacts", async () => {
     /Band Romanian deadlift/,
   );
   assert.match(layout, /Workin — Four-week pull-up training block/);
-  assert.match(layout, /\/workin-favicon\.png/);
-  await access(new URL("../public/workin-logo.png", import.meta.url));
-  await access(new URL("../public/workin-favicon.png", import.meta.url));
+  assert.match(layout, /\/favicon\.svg/);
+  await access(new URL("../public/workin-logo.svg", import.meta.url));
+  await access(new URL("../public/favicon.svg", import.meta.url));
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.match(packageJson, /"html-to-image": "1\.11\.13"/);
   assert.match(packageJson, /"jspdf": "4\.2\.1"/);
