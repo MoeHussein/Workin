@@ -7,7 +7,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
-const title = "Workin — Four-week pull-up training block";
+const title = "Workin — Six-week calisthenics training block";
 const description =
   "A calm, phone-first workout companion with daily training, progress tracking, notes, and a circular rest timer.";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         url: `${basePath}/og.png`,
         width: 1734,
         height: 907,
-        alt: "Workin pull-up training block",
+        alt: "Workin calisthenics training block",
       },
     ],
   },

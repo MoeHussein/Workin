@@ -2469,6 +2469,58 @@ body::selection {
   letter-spacing: 0.08em;
 }
 
+.weekly-pdf-page.is-dense {
+  padding: 36px 48px 30px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-header {
+  padding-bottom: 12px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-hero {
+  padding: 20px 0 10px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-hero h2 {
+  font-size: 40px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-hero > strong {
+  font-size: 76px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-summary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-meta {
+  padding-bottom: 10px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-exercise {
+  padding: 8px 0;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-exercise > span {
+  width: 29px;
+  height: 29px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-exercise h3 {
+  font-size: 15px;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-exercise p {
+  font-size: 8.5px;
+  line-height: 1.25;
+}
+
+.weekly-pdf-page.is-dense .weekly-pdf-footer {
+  padding-top: 12px;
+}
+
 @media (max-width: 640px) {
   .session-actions {
     display: grid;

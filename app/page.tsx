@@ -31,8 +31,8 @@ const emptyLog: WorkoutLog = {
   place: "",
 };
 
-const DEFAULT_PROGRAM_START = "2026-07-27";
-const STORAGE_KEY = "workin:progress:v4";
+const DEFAULT_PROGRAM_START = "2026-08-24";
+const STORAGE_KEY = "workin:progress:v5";
 const ASSET_PREFIX = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const assetPath = (path: string) => `${ASSET_PREFIX}${path}`;
 
@@ -74,10 +74,10 @@ function getExercisesForWeek(
       (exercise) =>
         !scheduledDate || !exercise.endsOn || scheduledDate <= exercise.endsOn,
     )
-    .filter((exercise) => cycleWeek !== 4 || !exercise.omitInWeek4)
+    .filter((exercise) => !exercise.omitInWeeks?.includes(cycleWeek))
     .map((exercise) =>
-      cycleWeek === 4 && exercise.week4Prescription
-        ? { ...exercise, prescription: exercise.week4Prescription }
+      exercise.weekPrescriptions?.[cycleWeek]
+        ? { ...exercise, prescription: exercise.weekPrescriptions[cycleWeek] }
         : exercise,
     );
 }
@@ -322,7 +322,7 @@ export default function Home() {
     : 0;
   const timerProgress = timerDuration > 0 ? (remaining / timerDuration) * 360 : 0;
   const displayedIntensity =
-    cycleWeek === 4 && day.strengthDay
+    cycleWeek === 6 && day.strengthDay
       ? "Leave about 3 reps in reserve"
       : day.intensity;
   const selectedDateLabel = selectedDate
@@ -666,8 +666,8 @@ export default function Home() {
             <span className="audit-type">OUR INFERENCE</span>
             <h3>The pulling dose is deliberate, but it must be logged.</h3>
             <p>
-              Pull-ups, rows, hangs, and optional negatives all contribute stress. The current
-              three balanced exposures are retained; reduce optional work first if recovery worsens.
+              Monday strength sets, Wednesday assisted volume, Friday technique singles, and ring
+              rows serve different purposes. Their value depends on full-ROM logs and joint recovery.
             </p>
           </article>
           <article className="audit-card anecdote">
@@ -682,9 +682,9 @@ export default function Home() {
             <span className="audit-type">PROGRAM CHANGE</span>
             <h3>Coverage expanded without turning every day into bodybuilding.</h3>
             <p>
-              Substitutions add dips, reverse crunches, and knee-flexion hamstring work. Small
-              lateral-delt, biceps, shoulder-control, tibialis, and hip-abduction accessories are
-              distributed from Monday to Saturday; Sunday remains full rest.
+              The six-week block adds structured dip and pike progressions, ring rows, knee-flexion
+              hamstring work, face pulls, lateral delts, arms, calves, tibialis work, and functional
+              core training. Sunday remains complete rest.
             </p>
           </article>
         </div>
@@ -756,7 +756,7 @@ export default function Home() {
             height={47}
             unoptimized
           />
-          <p>Workin · A practical four-week block. Not medical care or individualized coaching.</p>
+          <p>Workin · A practical six-week block. Not medical care or individualized coaching.</p>
         </div>
         <a href="#today">Back to today ↑</a>
       </footer>
@@ -774,7 +774,7 @@ export default function Home() {
                 unoptimized
               />
             </div>
-            <p>4-week pull-up block</p>
+            <p>6-week calisthenics block</p>
           </header>
 
           <div className="export-hero">
@@ -823,7 +823,7 @@ export default function Home() {
             (exercise) => !exercise.startsAfter || scheduledDate > exercise.startsAfter,
           );
           const weeklyIntensity =
-            cycleWeek === 4 && weeklyDay.strengthDay
+            cycleWeek === 6 && weeklyDay.strengthDay
               ? "Leave about 3 reps in reserve"
               : weeklyDay.intensity;
           const scheduledDateLabel = scheduledDate
@@ -832,7 +832,7 @@ export default function Home() {
 
           return (
             <article
-              className="weekly-pdf-page"
+              className={`weekly-pdf-page ${scheduledExercises.length >= 9 ? "is-dense" : ""}`}
               data-weekly-pdf-page
               key={weeklyDay.day}
             >
@@ -848,7 +848,7 @@ export default function Home() {
                   />
                   <small>Complete weekly workout</small>
                 </div>
-                <p>WEEK {cycleWeek} / 4</p>
+                <p>WEEK {cycleWeek} / 6</p>
               </header>
 
               <div className="weekly-pdf-hero">

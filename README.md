@@ -1,7 +1,7 @@
 # Workin
 
 Workin is a phone-first calisthenics workout tracker built around a progressive
-four-week program.
+six-week calisthenics and resistance-band program.
 
 [Open the live website](https://moehussein.github.io/Workin/#today)
 
@@ -10,7 +10,7 @@ four-week program.
 - Monday-first weekly workout schedule
 - Exercise completion tracking and session notes
 - Circular rest timer
-- Four-week progression and consolidation rules
+- Six-week progression, fatigue adjustment, and reassessment guidance
 - Downloadable daily workout images
 - Downloadable complete weekly workout PDFs
 - Review-ready JSON plan export

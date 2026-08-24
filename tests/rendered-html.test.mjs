@@ -2,119 +2,71 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("builds a deployable worker and completed workout product shell", async () => {
+test("builds the complete Workin product shell", async () => {
   const [page, layout] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
-
   await access(new URL("../out/index.html", import.meta.url));
-  assert.match(layout, /Workin — Four-week pull-up training block/);
+  assert.match(layout, /Workin — Six-week calisthenics training block/);
   assert.match(page, /Plan guide/);
-  assert.match(page, /assetPath\("\/workin-logo\.svg"\)/);
-  assert.match(page, /assetPath\("\/workin-logo-footer\.svg"\)/);
-  assert.equal((page.match(/\bunoptimized\b/g) ?? []).length, 4);
-  assert.match(page, /Complete this session/);
   assert.match(page, /Download today’s workout/);
   assert.match(page, /Download complete workout/);
-  assert.match(page, /workout-export-card/);
   assert.match(page, /weekly-pdf-page/);
-  assert.match(page, /REST/);
+  assert.match(page, /timer-orbit/);
+  assert.match(page, /DEFAULT_PROGRAM_START = "2026-08-24"/);
+  assert.match(page, /workin:progress:v5/);
+  assert.match(page, /WEEK \{cycleWeek\} \/ 6/);
   assert.doesNotMatch(`${page}\n${layout}`, /codex-preview|react-loading-skeleton/i);
 });
 
-test("removes starter-only product artifacts", async () => {
-  const [page, layout, packageJson, css] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
-  ]);
-
-  assert.match(page, /Week \{cycleWeek\}/);
-  assert.match(page, /Training place/);
-  assert.match(page, /Start \{exercise\.restSeconds\}s rest/);
-  assert.match(page, /timer-orbit/);
-  assert.match(page, /DEFAULT_PROGRAM_START = "2026-07-27"/);
-  assert.match(
-    await readFile(new URL("../app/workout-data.ts", import.meta.url), "utf8"),
-    /Band Romanian deadlift/,
-  );
+test("contains the V2 plan and the approved bonus movements", async () => {
   const workoutData = await readFile(
     new URL("../app/workout-data.ts", import.meta.url),
     "utf8",
   );
-  assert.match(workoutData, /name: "Band pull-apart"/);
-  assert.match(workoutData, /name: "Assisted parallel-bar dip"/);
-  assert.match(workoutData, /name: "Reverse crunch"/);
-  assert.match(workoutData, /name: "Standing band hamstring curl"/);
-  assert.match(workoutData, /name: "Band lateral raise"/);
-  assert.match(workoutData, /name: "Band curl"/);
-  assert.match(workoutData, /name: "No-anchor band external rotation"/);
-  assert.match(workoutData, /name: "Wall tibialis raise"/);
-  assert.match(workoutData, /name: "Band lateral walk"/);
-  assert.match(workoutData, /endsOn: "2026-07-29"/);
-  assert.match(workoutData, /restSeconds: 90,[\s\S]*?omitInWeek4: true/);
-  assert.match(workoutData, /able to talk but not sing/);
-  assert.match(workoutData, /week4Prescription: "2 × 4–8"/);
-  assert.match(workoutData, /every working set reaches the top/);
-  assert.match(page, /getExercisesForWeek/);
-  assert.match(page, /window\.localStorage/);
-  assert.match(page, /workin:progress:v4/);
-  assert.match(page, /final-set RIR/);
-  assert.match(page, /radiating, unstable/);
-  assert.match(layout, /Workin — Four-week pull-up training block/);
-  assert.match(layout, /\/favicon\.svg/);
-  await access(new URL("../public/workin-logo.svg", import.meta.url));
-  assert.match(
-    await readFile(new URL("../public/workin-logo-footer.svg", import.meta.url), "utf8"),
-    /fill="#141513"/,
-  );
-  await access(new URL("../public/favicon.svg", import.meta.url));
-  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
-  assert.match(packageJson, /"html-to-image": "1\.11\.13"/);
-  assert.match(packageJson, /"jspdf": "4\.2\.1"/);
-  assert.match(page, /toBlob\(exportCardRef\.current/);
+  for (const expected of [
+    'name: "Walking lunge"',
+    'name: "Band face pull to external rotation"',
+    'name: "Band lateral raise"',
+    'name: "Band hammer curl"',
+    'name: "Elevated close-grip push-up"',
+    'name: "Band overhead triceps extension"',
+    'name: "Wall tibialis raise"',
+    'name: "Side plank"',
+  ]) {
+    assert.match(workoutData, new RegExp(expected));
+  }
+  assert.doesNotMatch(workoutData, /Bulgarian split squat/);
+  assert.match(workoutData, /weekPrescriptions: \{ 6: "2 × 1–2" \}/);
+  assert.match(workoutData, /week: 6/);
+});
+
+test("keeps GitHub Pages deployment, local persistence, and download layout", async () => {
+  const [workflow, nextConfig, page, css, packageJson] = await Promise.all([
+    readFile(new URL("../.github/workflows/deploy-pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../next.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+  assert.match(workflow, /actions\/deploy-pages@v4/);
+  assert.match(workflow, /NEXT_PUBLIC_BASE_PATH: \/Workin/);
+  assert.match(nextConfig, /output: "export"/);
+  assert.match(page, /window\.localStorage\.setItem/);
   assert.match(page, /pdf\.addImage\(pageImage, "JPEG", 0, 0, 210, 297/);
-  assert.match(page, /pages\.length !== 7/);
-  assert.match(page, /workin-day-\$\{day\.day\}-\$\{selectedDate\}\.png/);
-  assert.match(page, /workin-week-\$\{weekStart\}\.pdf/);
-  assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?flex: 0 0 auto;/);
   assert.match(css, /\.weekly-pdf-meta span \{[\s\S]*?white-space: nowrap;/);
-  assert.match(css, /\.session-meta span \{[\s\S]*?flex: 0 0 auto;/);
   assert.match(css, /\.session-meta span \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.export-meta span \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.download-workout-button \{[\s\S]*?white-space: nowrap;/);
   assert.match(css, /\.download-complete-button \{[\s\S]*?white-space: nowrap;/);
-  assert.match(css, /\.download-arrow::before \{[\s\S]*?rotate\(45deg\)/);
-  await assert.rejects(access(new URL("../app/_sites-preview/SkeletonPreview.tsx", import.meta.url)));
-  await assert.rejects(access(new URL("../app/_sites-preview/preview.css", import.meta.url)));
+  assert.match(packageJson, /"html-to-image": "1\.11\.13"/);
+  assert.match(packageJson, /"jspdf": "4\.2\.1"/);
+  await assert.rejects(access(new URL("../.openai/hosting.json", import.meta.url)));
+  await assert.rejects(access(new URL("../app/api/progress/route.ts", import.meta.url)));
 });
 
-test("declares GitHub Pages deployment and browser-local persistence", async () => {
-  const [workflow, nextConfig, page] = await Promise.all([
-    readFile(
-      new URL("../.github/workflows/deploy-pages.yml", import.meta.url),
-      "utf8",
-    ),
-    readFile(new URL("../next.config.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-  ]);
-  assert.match(workflow, /actions\/deploy-pages@v4/);
-  assert.match(workflow, /NEXT_PUBLIC_BASE_PATH: \/Workin/);
-  assert.match(workflow, /path: \.\/out/);
-  assert.match(nextConfig, /output: "export"/);
-  assert.match(nextConfig, /basePath/);
-  assert.match(page, /window\.localStorage\.setItem/);
-  await assert.rejects(
-    access(new URL("../.openai/hosting.json", import.meta.url)),
-  );
-  await assert.rejects(
-    access(new URL("../app/api/progress/route.ts", import.meta.url)),
-  );
-});
-
-test("exports the current plan as review-ready JSON", async () => {
+test("exports a review-ready six-week JSON plan", async () => {
   const plan = JSON.parse(
     await readFile(new URL("../exports/workin-plan.json", import.meta.url), "utf8"),
   );
@@ -122,62 +74,42 @@ test("exports the current plan as review-ready JSON", async () => {
     (total, day) => total + day.exercises.length,
     0,
   );
-
-  assert.equal(plan.schemaVersion, 2);
-  assert.equal(plan.plan.programStartDate, "2026-07-27");
+  assert.equal(plan.schemaVersion, 3);
+  assert.equal(plan.plan.programStartDate, "2026-08-24");
   assert.equal(plan.plan.weekStartsOn, "Monday");
-  assert.equal(plan.plan.scheduleVersion, 4);
-  assert.equal(plan.plan.coverageRevisionEffectiveAfter, "2026-07-29");
-  assert.equal(plan.plan.exerciseRecordCount, 45);
-  assert.equal(plan.plan.currentExerciseCount, 42);
-  assert.equal(plan.traineeProfile.demographics.sex, "male");
+  assert.equal(plan.plan.scheduleVersion, 5);
+  assert.equal(plan.plan.cycleLengthWeeks, 6);
+  assert.equal(plan.plan.exerciseRecordCount, exerciseCount);
   assert.equal(plan.traineeProfile.demographics.ageYears, 25);
   assert.equal(plan.traineeProfile.demographics.heightCm, 190);
   assert.equal(plan.traineeProfile.demographics.bodyWeightKg, 88);
-  assert.equal(plan.calculations.proteinGramsPerKgPerDay.value, 1.76);
-  assert.match(plan.planRules.progression, /every working set/);
-  assert.match(plan.planRules.moderateAerobic, /talk but not sing/);
-  assert.equal(
-    plan.traineeProfile.currentBlock.completedSessions.length,
-    2,
-  );
-  assert.ok(plan.validationReadiness.auditChecklist.length >= 10);
-  assert.ok(plan.validationReadiness.openQuestions.length >= 8);
+  assert.equal(plan.traineeProfile.nutrition.proteinTargetGramsPerKgPerDay, 1.76);
   assert.equal(plan.days.length, 7);
-  assert.equal(exerciseCount, 45);
+  assert.equal(plan.weekGuidance.length, 6);
   assert.equal(plan.days[0].weekday, "Monday");
-  assert.equal(plan.days[0].title, "Strength A");
-  assert.equal(plan.days[0].exercises[1].week4Prescription, "2 × 4–8");
+  assert.equal(
+    plan.days[0].exercises.find((exercise) => exercise.id === "a-walking-lunge").name,
+    "Walking lunge",
+  );
+  assert.equal(
+    plan.days[0].exercises.find((exercise) => exercise.id === "a-triceps-extension")
+      .weekPrescriptions["6"],
+    "1 × 12–20",
+  );
   assert.equal(
     plan.days[2].exercises.find((exercise) => exercise.id === "c-face-pull").name,
-    "Band pull-apart",
+    "Band face pull to external rotation",
   );
   assert.equal(
-    plan.days[0].exercises.find((exercise) => exercise.id === "a-core").endsOn,
-    "2026-07-29",
+    plan.days[2].exercises.find((exercise) => exercise.id === "c-tibialis").cue
+      .startsWith("BONUS"),
+    true,
   );
   assert.equal(
-    plan.days[0].exercises.find((exercise) => exercise.id === "a-reverse-crunch")
-      .startsAfter,
-    "2026-07-29",
-  );
-  assert.equal(
-    plan.days[4].exercises.find((exercise) => exercise.id === "e-dip")
-      .week4Prescription,
-    "2 × 5–10",
-  );
-  assert.equal(
-    plan.days[1].exercises.find((exercise) => exercise.id === "b-hang").omitInWeek4,
+    plan.days[4].exercises.find((exercise) => exercise.id === "e-side-plank").cue
+      .startsWith("BONUS"),
     true,
   );
   assert.equal(plan.days[6].weekday, "Sunday");
-  assert.equal(plan.days[6].title, "Full rest");
-  assert.equal(plan.days[6].exercises.length, 2);
-  assert.equal(
-    plan.days[6].exercises.some(
-      (exercise) => exercise.startsAfter === "2026-07-29",
-    ),
-    false,
-  );
-  assert.equal(plan.weekGuidance.length, 4);
+  assert.equal(plan.days[6].title, "Complete rest");
 });

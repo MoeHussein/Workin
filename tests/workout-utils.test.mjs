@@ -26,11 +26,11 @@ test("anchors the personal program week to Monday", () => {
   assert.equal(getProgramWeekStart("2026-07-27", "2026-08-03"), "2026-08-03");
 });
 
-test("handles month boundaries and the repeating four-week cycle", () => {
+test("handles month boundaries and the repeating six-week cycle", () => {
   assert.equal(addDays("2026-07-31", 1), "2026-08-01");
-  assert.equal(getCycleWeek("2026-07-27", "2026-07-27"), 1);
-  assert.equal(getCycleWeek("2026-07-27", "2026-08-17"), 4);
-  assert.equal(getCycleWeek("2026-07-27", "2026-08-24"), 1);
+  assert.equal(getCycleWeek("2026-08-24", "2026-08-24"), 1);
+  assert.equal(getCycleWeek("2026-08-24", "2026-09-28"), 6);
+  assert.equal(getCycleWeek("2026-08-24", "2026-10-05"), 1);
 });
 
 test("rejects impossible dates and formats timer boundaries", () => {
