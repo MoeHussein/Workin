@@ -1,64 +1,39 @@
-# Workin
+# WorkInGYM
 
-Workin is a phone-first calisthenics workout tracker built around a progressive
-six-week calisthenics and resistance-band program.
+A phone-friendly gym companion adapted from [MoeHussein/Workin](https://github.com/MoeHussein/Workin), preserving its Git history and replacing the calisthenics block with a six-week gym program.
 
-[Open the live website](https://moehussein.github.io/Workin/#today)
+- Three full-body sessions with push, pull and leg emphases; Saturday, Monday and Wednesday by default.
+- Per-set weight, repetitions or hold-time logging, completion, previous-session reference and session notes.
+- Direct demonstrations for all 19 distinct exercises; verified short-clip durations are shown where available. Variant differences are explained.
+- Rest timer that uses an absolute deadline so returning from another tab updates correctly.
+- Optional third working sets from week three, enabled only when recovery is good.
+- Three-page plan PDF with clickable demos, session image downloads, and JSON backup import/export.
+- Browser-local progress under a separate WorkInGYM storage key. No automatic cross-device sync.
 
-## Features
+## Development
 
-- Monday-first weekly workout schedule
-- Exercise completion tracking and session notes
-- Circular rest timer
-- Six-week progression, fatigue adjustment, and reassessment guidance
-- Downloadable daily workout images
-- Downloadable complete weekly workout PDFs
-- Review-ready JSON plan export
-- Private workout logs stored locally in the current browser
-
-## Workout data
-
-The current structured program is available in:
-
-- `app/workout-data.ts` — source used by the website and downloads
-- `exports/workin-plan.json` — shareable plan and trainee-profile snapshot
-- `exports/workin-whole-body-muscle-audit.md` — documented coverage audit
-
-Exercise changes made in `app/workout-data.ts` automatically flow into the
-website, daily workout images, weekly PDFs, and the generated JSON export.
-
-## Local development
-
-Requirements:
-
-- Node.js `>=22.13.0`
+Use Node.js >=22.13.0.
 
 ```bash
-npm install
-npm run dev
+npm ci
+npm run dev:next
 ```
 
-Validation:
+## Checks and build
 
 ```bash
 npm run export:plan
 npm test
+npx tsc --noEmit
+npm run build
 ```
 
-## Publishing
+The static site is exported to `out/`. `app/workout-data.ts` is the plan source; `app/exercise-demos.json` contains the verified demonstration mapping. `exports/workingym-plan.json` contains the generic program without a personal health profile.
 
-Every push to `main` is built and deployed through GitHub Actions to GitHub
-Pages. The static deployment stores progress on the device, so workout history
-does not automatically sync between different browsers or phones.
+## Hosting
 
-## Stack
+The Sites project is configured in `.openai/hosting.json`. The GitHub Pages workflow uses `/WorkInGYM` as its base path; set the repository Pages source to **GitHub Actions** before running it. The Pages workflow is manually triggered to avoid deploying before Pages is configured. For a root-domain build, omit `NEXT_PUBLIC_BASE_PATH`.
 
-- React and TypeScript
-- Next.js static export
-- GitHub Pages and GitHub Actions
+## Training
 
-## Important note
-
-Workin is a practical training tracker, not medical care or individualized
-clinical coaching. Exercise selection and progression should be adjusted when
-pain, technique breakdown, or inadequate recovery occurs.
+Start with light loads and two working sets. The program is a starting routine, not a medical diagnosis or clearance. Follow existing medical advice, adapt painful movements, and review recovery and logs at the end of six weeks.

@@ -1,54 +1,31 @@
-import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space",
-  subsets: ["latin"],
-});
-
-const title = "Workin — Six-week calisthenics training block";
-const description =
-  "A calm, phone-first workout companion with daily training, progress tracking, notes, and a circular rest timer.";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
+const title = "WorkInGYM — Your daily stronger";
+const description =
+  "Three focused gym sessions, exercise demos, weight and rep logging, and room to recover. A six-week strength companion.";
 export const metadata: Metadata = {
-  metadataBase: new URL("https://moehussein.github.io/"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ??
+      "https://workingym.mo-hussein217.chatgpt.site",
+  ),
   title,
   description,
-  icons: {
-    icon: [{ url: `${basePath}/favicon.svg`, type: "image/svg+xml", sizes: "any" }],
-    shortcut: `${basePath}/favicon.svg`,
-  },
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    images: [
-      {
-        url: `${basePath}/og.png`,
-        width: 1734,
-        height: 907,
-        alt: "Workin calisthenics training block",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title,
-    description,
-    images: [`${basePath}/og.png`],
-  },
+  icons: { icon: `${basePath}/favicon.svg` },
+  appleWebApp: { capable: true, title: "WorkInGYM", statusBarStyle: "default" },
+  openGraph: { title, description, type: "website" },
 };
-
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#f7f8f2",
+};
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={spaceGrotesk.variable}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

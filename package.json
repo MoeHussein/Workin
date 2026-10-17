@@ -1,17 +1,17 @@
 {
-  "name": "workin",
+  "name": "workingym",
   "version": "0.1.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
     "start": "npx serve out",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "export:plan": "node scripts/export-workout-plan.mjs"
+    "export:plan": "node --experimental-strip-types scripts/export-workout-plan.mjs",
+    "dev:next": "next dev"
   },
   "dependencies": {
     "html-to-image": "1.11.13",

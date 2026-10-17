@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   addDays,
   formatTimer,
@@ -11,953 +10,1397 @@ import {
   parseDateKey,
   toLocalDateKey,
 } from "../lib/workout-utils.mjs";
-import { planRules, weekGuidance, workoutDays, type Exercise } from "./workout-data";
+import {
+  demoFor,
+  PROGRAM_START,
+  STORAGE_KEY,
+  setsFor,
+  weekGuidance,
+  workoutDays,
+  type Exercise,
+} from "./workout-data";
 
-type ExerciseState = Record<string, boolean>;
-
-type WorkoutLog = {
+type SetLog = { kg: string; reps: string; done: boolean };
+type SessionLog = {
+  day: number;
   completed: boolean;
-  energy: number | null;
-  exerciseState: ExerciseState;
   notes: string;
-  place: string;
+  sets: Record<string, SetLog[]>;
 };
-
-const emptyLog: WorkoutLog = {
-  completed: false,
-  energy: null,
-  exerciseState: {},
-  notes: "",
-  place: "",
+type Store = {
+  version: 1;
+  programStart: string;
+  extraSet: boolean;
+  logs: Record<string, SessionLog>;
 };
-
-const DEFAULT_PROGRAM_START = "2026-08-24";
-const STORAGE_KEY = "workin:progress:v5";
-const ASSET_PREFIX = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const assetPath = (path: string) => `${ASSET_PREFIX}${path}`;
-
-type WorkoutStore = {
-  programStart?: string;
-  logs?: Record<string, WorkoutLog>;
-};
-
-function readWorkoutStore(): WorkoutStore {
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-const monthFormatter = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
+type View = "today" | "plan" | "history";
+const blankSet = (): SetLog => ({ kg: "", reps: "", done: false });
+const freshStore = (): Store => ({
+  version: 1,
+  programStart: PROGRAM_START,
+  extraSet: false,
+  logs: {},
 });
-const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "short" });
-const fullDateFormatter = new Intl.DateTimeFormat("en", {
+const weekday = new Intl.DateTimeFormat("en", { weekday: "short" });
+const fullDate = new Intl.DateTimeFormat("en", {
   weekday: "long",
   month: "long",
   day: "numeric",
 });
+const shortDate = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+});
+const pdfText = (text: string) =>
+  text
+    .replace(/[–—−]/g, "-")
+    .replace(/×/g, "x")
+    .replace(/·/g, "/")
+    .replace(/[’‘]/g, "'");
 
-function pdfText(value: string) {
-  return value.replace(/[–—−]/g, "-").replace(/\u00a0/g, " ");
+function Icon({ name, size = 20 }: { name: string; size?: number }) {
+  const paths: Record<string, React.ReactNode> = {
+    barbell: (
+      <>
+        <path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12" />
+      </>
+    ),
+    arrow: (
+      <>
+        <path d="M5 12h14m-6-6 6 6-6 6" />
+      </>
+    ),
+    play: <path d="m9 5 11 7-11 7Z" />,
+    clock: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </>
+    ),
+    check: <path d="m5 12 4 4L19 6" />,
+    download: (
+      <>
+        <path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" />
+      </>
+    ),
+    calendar: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="3" />
+        <path d="M7 3v4m10-4v4M3 11h18" />
+      </>
+    ),
+    chart: (
+      <>
+        <path d="M4 4v16h17M8 15l4-5 4 2 5-7" />
+      </>
+    ),
+    pause: (
+      <>
+        <path d="M8 5v14M16 5v14" />
+      </>
+    ),
+    reset: (
+      <>
+        <path d="M3 10a9 9 0 1 1 1 7M3 4v6h6" />
+      </>
+    ),
+  };
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.65"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths[name] ?? paths.barbell}
+    </svg>
+  );
 }
 
-function getExercisesForWeek(
-  exercises: Exercise[],
-  cycleWeek: number,
-  scheduledDate?: string,
-) {
-  return exercises
-    .filter(
-      (exercise) =>
-        !scheduledDate || !exercise.endsOn || scheduledDate <= exercise.endsOn,
-    )
-    .filter((exercise) => !exercise.omitInWeeks?.includes(cycleWeek))
-    .map((exercise) =>
-      exercise.weekPrescriptions?.[cycleWeek]
-        ? { ...exercise, prescription: exercise.weekPrescriptions[cycleWeek] }
-        : exercise,
-    );
+function restoreStore(raw: string | null): Store {
+  if (!raw) return freshStore();
+  const value = JSON.parse(raw) as Store;
+  if (
+    value.version !== 1 ||
+    !value.logs ||
+    typeof value.logs !== "object" ||
+    Array.isArray(value.logs)
+  )
+    throw new Error("Invalid workout data");
+  parseDateKey(value.programStart);
+  const safe: Store = {
+    version: 1,
+    programStart: value.programStart,
+    extraSet: value.extraSet === true,
+    logs: {},
+  };
+  for (const [date, log] of Object.entries(value.logs)) {
+    try {
+      parseDateKey(date);
+    } catch {
+      continue;
+    }
+    if (!log || !Number.isInteger(log.day) || log.day < 1 || log.day > 7)
+      continue;
+    const sets: Record<string, SetLog[]> = {};
+    for (const [id, rows] of Object.entries(log.sets ?? {})) {
+      if (!Array.isArray(rows)) continue;
+      sets[id] = rows
+        .slice(0, 3)
+        .map((row) => ({
+          kg: typeof row?.kg === "string" ? row.kg.slice(0, 8) : "",
+          reps: typeof row?.reps === "string" ? row.reps.slice(0, 4) : "",
+          done: row?.done === true,
+        }));
+    }
+    safe.logs[date] = {
+      day: log.day,
+      completed: log.completed === true,
+      notes: typeof log.notes === "string" ? log.notes.slice(0, 2000) : "",
+      sets,
+    };
+  }
+  return safe;
+}
+
+function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 export default function Home() {
-  const [selectedDate, setSelectedDate] = useState("");
-  const [programStart, setProgramStart] = useState("");
-  const [log, setLog] = useState<WorkoutLog>(emptyLog);
-  const [weeklyCompleted, setWeeklyCompleted] = useState<Set<string>>(new Set());
-  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [message, setMessage] = useState("");
-  const [timerDuration, setTimerDuration] = useState(90);
-  const [remaining, setRemaining] = useState(90);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [timerNotice, setTimerNotice] = useState("");
-  const [downloadState, setDownloadState] = useState<"idle" | "creating" | "done" | "error">(
-    "idle",
-  );
-  const [weeklyPdfState, setWeeklyPdfState] = useState<
-    "idle" | "creating" | "done" | "error"
-  >("idle");
-  const [weeklyPdfProgress, setWeeklyPdfProgress] = useState(0);
-  const exportCardRef = useRef<HTMLElement>(null);
-  const weeklyPdfRef = useRef<HTMLElement>(null);
+  const [store, setStore] = useState<Store>(freshStore);
+  const [loaded, setLoaded] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(PROGRAM_START);
+  const [view, setView] = useState<View>("today");
+  const [saveStatus, setSaveStatus] = useState("Saved on this device");
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(120);
+  const [timerDuration, setTimerDuration] = useState(120);
+  const [running, setRunning] = useState(false);
+  const [timerFinished, setTimerFinished] = useState(false);
+  const deadline = useRef<number | null>(null);
+  const sessionRef = useRef<HTMLElement>(null);
+  const backupRef = useRef<HTMLInputElement>(null);
+  const storageWritable = useRef(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const today = toLocalDateKey(new Date());
-      const stored = readWorkoutStore();
-      setSelectedDate(today);
-      setProgramStart(stored.programStart ?? DEFAULT_PROGRAM_START);
-    }, 0);
-    return () => window.clearTimeout(timer);
+    let initial = freshStore();
+    try {
+      initial = restoreStore(localStorage.getItem(STORAGE_KEY));
+    } catch {
+      storageWritable.current = false;
+      setSaveStatus(
+        "Saved data could not be read. Export it before making changes.",
+      );
+    }
+    setStore(initial);
+    setSelectedDate(
+      toLocalDateKey(new Date()) < initial.programStart
+        ? initial.programStart
+        : toLocalDateKey(new Date()),
+    );
+    setLoaded(true);
   }, []);
 
-  const dayIndex =
-    selectedDate && programStart ? getProgramDayIndex(programStart, selectedDate) : 1;
-  const day = workoutDays[dayIndex - 1];
-  const weekStart =
-    selectedDate && programStart
-      ? getProgramWeekStart(programStart, selectedDate)
-      : "";
-  const cycleWeek =
-    selectedDate && programStart ? getCycleWeek(programStart, selectedDate) : 1;
-  const guidance = weekGuidance[cycleWeek - 1];
-  const weekDates = useMemo(
-    () => (weekStart ? Array.from({ length: 7 }, (_, index) => addDays(weekStart, index)) : []),
-    [weekStart],
-  );
+  useEffect(() => {
+    if (!loaded || !storageWritable.current) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      setSaveStatus("Saved on this device");
+    } catch {
+      setSaveStatus("Could not save. Export a backup before leaving.");
+    }
+  }, [store, loaded]);
 
   useEffect(() => {
-    if (!selectedDate || !weekStart || !programStart) return;
-    const timer = window.setTimeout(() => {
-      const stored = readWorkoutStore();
-      const logs = stored.logs ?? {};
-      setLog(logs[selectedDate] ?? emptyLog);
-      setWeeklyCompleted(
-        new Set(weekDates.filter((date) => Boolean(logs[date]?.completed))),
+    if (!running) return;
+    const tick = () => {
+      const seconds = Math.max(
+        0,
+        Math.ceil(((deadline.current ?? Date.now()) - Date.now()) / 1000),
       );
-      setLoadState("ready");
-      setSaveState("idle");
-      setMessage("");
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [programStart, selectedDate, weekDates, weekStart]);
-
-  const persist = useCallback(
-    (snapshot: WorkoutLog) => {
-      if (!selectedDate) return;
-      setSaveState("saving");
-      setMessage("");
-      try {
-        const stored = readWorkoutStore();
-        const logs = { ...(stored.logs ?? {}), [selectedDate]: snapshot };
-        window.localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ programStart, logs }),
-        );
-        setWeeklyCompleted((current) => {
-          const next = new Set(current);
-          if (snapshot.completed) next.add(selectedDate);
-          else next.delete(selectedDate);
-          return next;
-        });
-        setSaveState("saved");
-      } catch {
-        setSaveState("error");
-        setMessage("Progress could not be saved in this browser.");
+      setTimerSeconds(seconds);
+      if (seconds === 0) {
+        setRunning(false);
+        setTimerFinished(true);
+        deadline.current = null;
       }
-    },
-    [programStart, selectedDate],
-  );
+    };
+    tick();
+    const interval = window.setInterval(tick, 250);
+    return () => window.clearInterval(interval);
+  }, [running]);
 
-  function updateLog(patch: Partial<WorkoutLog>, saveNow = true) {
-    setLog((current) => {
-      const next = { ...current, ...patch };
-      if (saveNow) persist(next);
-      return next;
+  const plannedIndex = getProgramDayIndex(store.programStart, selectedDate) - 1;
+  const session = store.logs[selectedDate];
+  const day = workoutDays[(session?.day ?? plannedIndex + 1) - 1];
+  const weekStart = getProgramWeekStart(store.programStart, selectedDate);
+  const dates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const week = getCycleWeek(store.programStart, selectedDate);
+  const guidance = weekGuidance[week - 1];
+  const history = Object.entries(store.logs)
+    .filter(([, log]) => log.completed && workoutDays[log.day - 1].strength)
+    .sort(([a], [b]) => b.localeCompare(a));
+  const weekCompleted = dates.filter(
+    (date) =>
+      store.logs[date]?.completed &&
+      workoutDays[store.logs[date].day - 1]?.strength,
+  ).length;
+  const countFor = (i: number) => setsFor(week, i, store.extraSet);
+  const rowsFor = (exercise: Exercise, i: number) =>
+    Array.from(
+      { length: countFor(i) },
+      (_, index) => session?.sets[exercise.id]?.[index] ?? blankSet(),
+    );
+  const totalSets = day.exercises.reduce((sum, _, i) => sum + countFor(i), 0);
+  const doneSets = day.exercises.reduce(
+    (sum, exercise, i) =>
+      sum + rowsFor(exercise, i).filter((row) => row.done).length,
+    0,
+  );
+  const completedExercises = day.exercises.filter((exercise, i) =>
+    rowsFor(exercise, i).every((row) => row.done),
+  ).length;
+  const progress = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
+
+  function changeSession(updater: (log: SessionLog) => SessionLog) {
+    setStore((current) => {
+      const log = current.logs[selectedDate] ?? {
+        day: day.day,
+        completed: false,
+        notes: "",
+        sets: {},
+      };
+      return {
+        ...current,
+        logs: { ...current.logs, [selectedDate]: updater(log) },
+      };
     });
   }
-
-  function toggleExercise(exerciseId: string) {
-    const exerciseState = {
-      ...log.exerciseState,
-      [exerciseId]: !log.exerciseState[exerciseId],
-    };
-    updateLog({ exerciseState });
+  function updateSet(
+    exercise: Exercise,
+    i: number,
+    rowIndex: number,
+    patch: Partial<SetLog>,
+  ) {
+    changeSession((log) => {
+      const rows = Array.from(
+        { length: countFor(i) },
+        (_, index) => log.sets[exercise.id]?.[index] ?? blankSet(),
+      );
+      rows[rowIndex] = { ...rows[rowIndex], ...patch };
+      return { ...log, sets: { ...log.sets, [exercise.id]: rows } };
+    });
   }
-
-  function saveNotes() {
-    persist(log);
-  }
-
-  function startRest(seconds: number) {
+  function startTimer(seconds: number) {
     setTimerDuration(seconds);
-    setRemaining(seconds);
-    setTimerRunning(true);
-    setTimerNotice("");
+    setTimerSeconds(seconds);
+    setTimerFinished(false);
+    deadline.current = Date.now() + seconds * 1000;
+    setRunning(true);
   }
-
-  async function downloadWorkout() {
-    if (
-      !exportCardRef.current ||
-      !selectedDate ||
-      downloadState === "creating" ||
-      weeklyPdfState === "creating"
-    ) {
-      return;
+  function pauseTimer() {
+    if (running) {
+      setRunning(false);
+      deadline.current = null;
+    } else {
+      deadline.current = Date.now() + (timerSeconds || timerDuration) * 1000;
+      setTimerSeconds(timerSeconds || timerDuration);
+      setTimerFinished(false);
+      setRunning(true);
     }
-
-    setWeeklyPdfState("idle");
-    setDownloadState("creating");
+  }
+  function chooseDate(date: string) {
+    setSelectedDate(date);
+    setView("today");
+    setNotice("");
+  }
+  function previousFor(id: string) {
+    const previous = Object.entries(store.logs)
+      .filter(
+        ([date, log]) =>
+          date < selectedDate &&
+          log.sets[id]?.some((row) => row.kg || row.reps),
+      )
+      .sort(([a], [b]) => b.localeCompare(a))[0];
+    if (!previous) return null;
+    const row = previous[1].sets[id].find((row) => row.kg || row.reps)!;
+    return `${shortDate.format(parseDateKey(previous[0]))}: ${row.kg || "BW"}${row.kg ? " kg" : ""} × ${row.reps || "—"}`;
+  }
+  function backup() {
+    saveBlob(
+      new Blob([JSON.stringify(store, null, 2)], { type: "application/json" }),
+      `workingym-backup-${toLocalDateKey(new Date())}.json`,
+    );
+    setNotice("Backup downloaded. Keep it to restore your training history.");
+  }
+  async function restore(file: File) {
+    try {
+      const imported = restoreStore(await file.text());
+      setStore((current) => ({
+        ...current,
+        logs: { ...imported.logs, ...current.logs },
+      }));
+      storageWritable.current = true;
+      setNotice(
+        "Backup imported. Existing sessions were kept when dates overlapped.",
+      );
+    } catch {
+      setNotice(
+        "That file is not a valid WorkInGYM backup. Your current data is unchanged.",
+      );
+    }
+  }
+  async function downloadImage() {
+    if (!sessionRef.current || busy) return;
+    setBusy(true);
     try {
       const { toBlob } = await import("html-to-image");
-      const blob = await toBlob(exportCardRef.current, {
-        backgroundColor: "#141513",
-        cacheBust: true,
-        pixelRatio: 1,
+      const blob = await toBlob(sessionRef.current, {
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        filter: (node) =>
+          !(node instanceof HTMLElement && node.dataset.noExport === "true"),
       });
-      if (!blob) throw new Error("The workout image could not be created.");
-
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.download = `workin-day-${day.day}-${selectedDate}.png`;
-      link.href = objectUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
-      setDownloadState("done");
-      window.setTimeout(() => setDownloadState("idle"), 2_500);
+      if (!blob) throw new Error("Image unavailable");
+      saveBlob(
+        blob,
+        `workingym-${day.letter.toLowerCase()}-${selectedDate}.png`,
+      );
+      setNotice("Session image downloaded.");
     } catch {
-      setDownloadState("error");
+      setNotice("Could not create the image. Your workout is still saved.");
+    } finally {
+      setBusy(false);
     }
   }
-
-  async function downloadCompleteWorkout() {
-    if (
-      !weeklyPdfRef.current ||
-      !weekStart ||
-      weekDates.length !== 7 ||
-      weeklyPdfState === "creating" ||
-      downloadState === "creating"
-    ) {
-      return;
-    }
-
-    const pages = Array.from(
-      weeklyPdfRef.current.querySelectorAll<HTMLElement>("[data-weekly-pdf-page]"),
-    );
-    if (pages.length !== 7) {
-      setWeeklyPdfState("error");
-      return;
-    }
-
-    setDownloadState("idle");
-    setWeeklyPdfState("creating");
-    setWeeklyPdfProgress(0);
+  async function downloadPlan() {
+    if (busy) return;
+    setBusy(true);
     try {
-      const [{ toJpeg }, { jsPDF }] = await Promise.all([
-        import("html-to-image"),
-        import("jspdf"),
-      ]);
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-        putOnlyUsedFonts: true,
-      });
-
-      for (let index = 0; index < pages.length; index += 1) {
-        const pageImage = await toJpeg(pages[index], {
-          backgroundColor: "#141513",
-          cacheBust: true,
-          pixelRatio: 1.4,
-          quality: 0.92,
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF();
+      workoutDays
+        .filter((item) => item.strength)
+        .forEach((item, pageIndex) => {
+          if (pageIndex) pdf.addPage();
+          pdf.setFillColor(29, 57, 46);
+          pdf.rect(0, 0, 210, 46, "F");
+          pdf.setTextColor(223, 247, 166);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(11);
+          pdf.text("WORKINGYM / SIX-WEEK GYM BLOCK", 17, 16);
+          pdf.setFontSize(24);
+          pdf.setTextColor(255, 255, 255);
+          pdf.text(`Session ${item.letter}: ${item.title}`, 17, 33);
+          pdf.setTextColor(45, 57, 49);
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "normal");
+          pdf.text(
+            pdfText(
+              `Week ${week} / ${item.duration} / ${week < 3 ? "3-4" : "2-3"} reps in reserve`,
+            ),
+            17,
+            57,
+          );
+          let y = 69;
+          for (const [i, exercise] of item.exercises.entries()) {
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.text(pdfText(`${i + 1}. ${exercise.name}`), 17, y);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(9);
+            pdf.text(
+              pdfText(
+                `${setsFor(week, i, store.extraSet)} sets x ${exercise.reps}${exercise.timed ? " sec" : " reps"}${exercise.perSide ? " / side" : ""} / Rest ${exercise.rest}s`,
+              ),
+              17,
+              y + 6,
+            );
+            const lines = pdf.splitTextToSize(pdfText(exercise.cue), 175);
+            pdf.text(lines, 17, y + 12);
+            const demo = demoFor(exercise.id);
+            if (demo) {
+              pdf.setTextColor(48, 104, 69);
+              pdf.textWithLink(
+                "Watch exercise demo",
+                17,
+                y + 14 + lines.length * 4,
+                { url: demo.url },
+              );
+              pdf.setTextColor(45, 57, 49);
+            }
+            y += 20 + lines.length * 4;
+          }
+          pdf.setFontSize(8);
+          pdf.text(
+            "Warm up 5-8 minutes, then do 1-2 lighter practice sets for the first leg and upper-body exercises.",
+            17,
+            278,
+          );
+          pdf.text(
+            "Train on nonconsecutive days. Start light, keep breathing and use your existing medical advice.",
+            17,
+            284,
+          );
+          pdf.text(`WorkInGYM / ${pageIndex + 1} of 3`, 17, 290);
         });
-        if (index > 0) pdf.addPage("a4", "portrait");
-        pdf.addImage(pageImage, "JPEG", 0, 0, 210, 297, undefined, "FAST");
-        setWeeklyPdfProgress(index + 1);
-        await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
-      }
-
-      pdf.save(`workin-week-${weekStart}.pdf`);
-      setWeeklyPdfState("done");
-      window.setTimeout(() => setWeeklyPdfState("idle"), 2_500);
+      pdf.save(`workingym-plan-week-${week}.pdf`);
+      setNotice(
+        "Your three-session plan PDF is downloaded, with clickable demonstration links.",
+      );
     } catch {
-      setWeeklyPdfState("error");
+      setNotice("Could not create the PDF. Please try again.");
+    } finally {
+      setBusy(false);
     }
   }
-
-  useEffect(() => {
-    if (!timerRunning) return;
-    const interval = window.setInterval(() => {
-      setRemaining((current) => {
-        if (current > 1) return current - 1;
-        window.clearInterval(interval);
-        setTimerRunning(false);
-        setTimerNotice("Rest complete");
-        if ("vibrate" in navigator) navigator.vibrate([180, 90, 180]);
-        return 0;
-      });
-    }, 1000);
-    return () => window.clearInterval(interval);
-  }, [timerRunning]);
-
-  const displayExercises = getExercisesForWeek(
-    day.exercises,
-    cycleWeek,
-    selectedDate,
-  );
-  const activeExercises = displayExercises.filter(
-    (exercise) => !exercise.startsAfter || selectedDate > exercise.startsAfter,
-  );
-  const completedExercises = activeExercises.filter(
-    (exercise) => log.exerciseState[exercise.id],
-  ).length;
-  const progress = activeExercises.length
-    ? Math.round((completedExercises / activeExercises.length) * 100)
-    : 0;
-  const timerProgress = timerDuration > 0 ? (remaining / timerDuration) * 360 : 0;
-  const displayedIntensity =
-    cycleWeek === 6 && day.strengthDay
-      ? "Leave about 3 reps in reserve"
-      : day.intensity;
-  const selectedDateLabel = selectedDate
-    ? fullDateFormatter.format(parseDateKey(selectedDate))
-    : "Loading today";
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" id="top">
       <header className="topbar">
-        <a className="brand" href="#today" aria-label="Workin home">
-          <Image
-            className="brand-logo"
-            src={assetPath("/workin-logo.svg")}
-            alt="Workin"
-            width={68}
-            height={55}
-            priority
-            unoptimized
-          />
+        <a
+          href="#top"
+          className="brand"
+          onClick={() => setView("today")}
+          aria-label="WorkInGYM home"
+        >
+          <span className="brand-icon">
+            <Icon name="barbell" size={26} />
+          </span>
+          <span>
+            WorkIn<span className="brand-gym">GYM</span>
+            <small>YOUR DAILY STRONGER</small>
+          </span>
         </a>
-        <a className="audit-link" href="#guide">
-          Plan guide <span aria-hidden="true">↓</span>
-        </a>
+        <nav aria-label="Main navigation">
+          {(["today", "plan", "history"] as View[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={view === item ? "active" : ""}
+              aria-current={view === item ? "page" : undefined}
+              onClick={() => setView(item)}
+            >
+              {item === "today"
+                ? "Today"
+                : item === "plan"
+                  ? "The plan"
+                  : "History"}
+            </button>
+          ))}
+        </nav>
+        <span className="device-status">
+          <span />
+          {loaded ? "Your space. Your pace." : "Getting ready…"}
+        </span>
       </header>
 
-      <section className="week-strip" aria-label="Select a workout day">
-        <div className="week-strip-heading">
-          <div>
-            <span>THIS WEEK</span>
-            <strong>{weekStart ? monthFormatter.format(parseDateKey(weekStart)) : "—"}</strong>
+      <section className="hero">
+        <div className="hero-copy">
+          <span className="eyebrow">
+            <span className="little-line" />
+            THE SIX-WEEK GYM BLOCK
+          </span>
+          <h1>
+            A little stronger.
+            <br />
+            <span>Every session.</span>
+          </h1>
+          <p>
+            Three days of focused strength. Room to recover.
+            <br className="desktop-break" /> A plan you can actually keep
+            showing up for.
+          </p>
+          <div className="hero-tags">
+            <span>
+              <Icon name="calendar" size={15} />{" "}
+              {workoutDays
+                .filter((item) => item.strength)
+                .map((item) =>
+                  weekday.format(
+                    parseDateKey(addDays(store.programStart, item.day - 1)),
+                  ),
+                )
+                .join(" · ")}
+            </span>
+            <span>
+              <Icon name="clock" size={15} /> 45–65 minutes
+            </span>
+            <span>Full body · A / B / C</span>
           </div>
-          <span>{weeklyCompleted.size}/7 logged</span>
         </div>
-        <div className="day-picker">
-          {weekDates.map((date) => {
-            const isSelected = date === selectedDate;
-            const isDone = weeklyCompleted.has(date);
-            return (
-              <button
-                className={`day-pill ${isSelected ? "selected" : ""} ${isDone ? "done" : ""}`}
-                key={date}
-                onClick={() => setSelectedDate(date)}
-                aria-pressed={isSelected}
-                type="button"
-              >
-                <span>{weekdayFormatter.format(parseDateKey(date)).toUpperCase()}</span>
-                <strong>{parseDateKey(date).getDate()}</strong>
-                <i aria-hidden="true">{isDone ? "✓" : ""}</i>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="today-grid">
-        <article className="session-panel">
-          <div className="session-heading">
-            <div>
-              <div className="date-nav">
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(addDays(selectedDate, -1))}
-                  disabled={!selectedDate}
-                  aria-label="Previous day"
-                >
-                  ←
-                </button>
-                <span>{selectedDateLabel}</span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-                  disabled={!selectedDate}
-                  aria-label="Next day"
-                >
-                  →
-                </button>
-              </div>
-              <p className="session-eyebrow">DAY {day.day} · {day.eyebrow}</p>
-              <h2>{day.title}</h2>
-              <p className="session-summary">{day.summary}</p>
-            </div>
-            <div
-              className="progress-ring"
-              style={{ "--progress": `${progress * 3.6}deg` } as React.CSSProperties}
-              aria-label={`${progress}% of exercises checked`}
-            >
-              <span>{progress}%</span>
-            </div>
+        <div className="block-card">
+          <div className="block-card-top">
+            <span>YOUR TRAINING BLOCK</span>
+            <span className="live-dot" />
           </div>
-
-          <div className="session-meta">
-            <span>◷ {day.duration}</span>
-            <span>◎ {displayedIntensity}</span>
-            <span>W{cycleWeek} · {guidance.label}</span>
+          <div className="block-week">
+            0{week}
+            <span>/ 06</span>
           </div>
-
-          <div className="session-actions">
-            <button
-              className="download-workout-button"
-              type="button"
-              onClick={downloadWorkout}
-              disabled={
-                !selectedDate ||
-                downloadState === "creating" ||
-                weeklyPdfState === "creating"
-              }
-            >
-              <span className="download-arrow" aria-hidden="true" />
-              {downloadState === "creating" ? "Designing image…" : "Download today’s workout"}
-            </button>
-            <button
-              className="download-complete-button"
-              type="button"
-              onClick={downloadCompleteWorkout}
-              disabled={
-                weekDates.length !== 7 ||
-                weeklyPdfState === "creating" ||
-                downloadState === "creating"
-              }
-            >
-              <span className="download-arrow" aria-hidden="true" />
-              {weeklyPdfState === "creating"
-                ? `Creating PDF ${weeklyPdfProgress}/7…`
-                : "Download complete workout"}
-            </button>
-            <span
-              className={`download-status ${
-                downloadState === "error" || weeklyPdfState === "error" ? "error" : ""
-              }`}
-              role={
-                downloadState === "error" || weeklyPdfState === "error" ? "alert" : "status"
-              }
-              aria-live="polite"
-            >
-              {downloadState === "done" && "Workout image downloaded"}
-              {downloadState === "error" && "Could not create the image. Please try again."}
-              {weeklyPdfState === "done" && "Complete weekly PDF downloaded"}
-              {weeklyPdfState === "error" && "Could not create the PDF. Please try again."}
+          <p>{guidance.label}</p>
+          <div className="block-bars" aria-label={`Week ${week} of six`}>
+            {weekGuidance.map((item) => (
+              <span
+                key={item.week}
+                className={item.week <= week ? "filled" : ""}
+              />
+            ))}
+          </div>
+          <div className="block-bottom">
+            <span>
+              <strong>
+                {weekCompleted}
+                <em>/3</em>
+              </strong>
+              sessions this week
+            </span>
+            <span>
+              <strong>{history.length}</strong>sessions completed
             </span>
           </div>
+        </div>
+      </section>
 
-          <div className="week-guidance">
-            <strong>Week {cycleWeek} · {guidance.label}</strong>
-            <span>{guidance.guidance}</span>
-          </div>
-
-          {loadState === "loading" && (
-            <div className="status-box" role="status">Loading your saved session…</div>
-          )}
-          {loadState === "error" && (
-            <div className="status-box error" role="alert">{message}</div>
-          )}
-
-          <div className={`exercise-list ${loadState !== "ready" ? "muted" : ""}`}>
-            {displayExercises.map((exercise, index) => {
-              const checked = Boolean(log.exerciseState[exercise.id]);
-              const deferred = Boolean(
-                exercise.startsAfter && selectedDate <= exercise.startsAfter,
-              );
-              return (
-                <article
-                  className={`exercise-card ${checked ? "checked" : ""} ${deferred ? "deferred" : ""}`}
-                  key={exercise.id}
-                >
-                  <button
-                    className="exercise-check"
-                    type="button"
-                    onClick={() => toggleExercise(exercise.id)}
-                    disabled={loadState !== "ready" || deferred}
-                    aria-pressed={checked}
-                    aria-label={`${checked ? "Mark incomplete" : "Mark complete"}: ${exercise.name}`}
-                  >
-                    <span>{checked ? "✓" : String(index + 1).padStart(2, "0")}</span>
-                  </button>
-                  <div className="exercise-main">
-                    <div className="exercise-title-row">
-                      <h3>{exercise.name}</h3>
-                      {exercise.optional && <span className="optional-tag">OPTIONAL</span>}
-                      {deferred && <span className="optional-tag next-tag">STARTS NEXT TIME</span>}
-                    </div>
-                    <strong>{exercise.prescription}</strong>
-                    <p>{exercise.cue}</p>
-                    <div className="exercise-actions">
-                      {exercise.restSeconds && !deferred && (
-                        <button type="button" onClick={() => startRest(exercise.restSeconds!)}>
-                          Start {exercise.restSeconds}s rest
-                        </button>
-                      )}
-                      {exercise.demoUrl && (
-                        <a href={exercise.demoUrl} target="_blank" rel="noreferrer">
-                          Form demo ↗
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-
-          <div className="complete-row">
-            <button
-              className={`complete-button ${log.completed ? "is-complete" : ""}`}
-              type="button"
-              onClick={() => updateLog({ completed: !log.completed })}
-              disabled={loadState !== "ready"}
-            >
-              <span>{log.completed ? "✓" : "○"}</span>
-              {log.completed ? "Session completed" : "Complete this session"}
-            </button>
-            <p>Optional items may be skipped. Completion is your judgment, not a punishment.</p>
-          </div>
-        </article>
-
-        <aside className="side-column">
-          <details className="notes-card card">
-            <summary>Session notes <span>+</span></summary>
-            <div className="notes-content">
-            <div className="card-label">SESSION LOG</div>
-            <label htmlFor="place">Training place</label>
-            <input
-              id="place"
-              value={log.place}
-              maxLength={100}
-              placeholder="Home, park, gym…"
-              onChange={(event) => updateLog({ place: event.target.value }, false)}
-              disabled={loadState !== "ready"}
-            />
-
-            <fieldset>
-              <legend>Energy before training</legend>
-              <div className="energy-row">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    type="button"
-                    key={value}
-                    className={log.energy === value ? "selected" : ""}
-                    onClick={() => updateLog({ energy: value })}
-                    disabled={loadState !== "ready"}
-                    aria-pressed={log.energy === value}
-                  >
-                    {value}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
-            <label htmlFor="notes">Workout log</label>
-            <p className="log-hint">
-              Record reps for every set, band and setup, final-set RIR, and any pain or
-              24–48 hour recovery issue. For cardio, add pace or distance and the talk test.
-            </p>
-            <textarea
-              id="notes"
-              value={log.notes}
-              maxLength={4000}
-              placeholder={"Pull-ups: band/setup · reps __ / __ / __ · final RIR __\nOther sets: reps or hold time · variation/load · RIR\nRecovery/cardio: symptoms · pace/distance · talk test"}
-              onChange={(event) => updateLog({ notes: event.target.value }, false)}
-              disabled={loadState !== "ready"}
-            />
-            <div className="save-notes-row">
-              <button type="button" onClick={saveNotes} disabled={loadState !== "ready"}>
-                Save place & notes
-              </button>
-              <span className={saveState === "error" ? "save-error" : ""} aria-live="polite">
-                {saveState === "saving" && "Saving…"}
-                {saveState === "saved" && "Saved"}
-                {saveState === "error" && "Not saved"}
+      {view === "today" && (
+        <>
+          <section className="week-section" aria-label="Workout calendar">
+            <div className="section-kicker">
+              <span>
+                YOUR WEEK{" "}
+                <b>
+                  {shortDate.format(parseDateKey(weekStart))} –{" "}
+                  {shortDate.format(parseDateKey(addDays(weekStart, 6)))}
+                </b>
               </span>
+              <button
+                type="button"
+                onClick={() =>
+                  chooseDate(
+                    toLocalDateKey(new Date()) < store.programStart
+                      ? store.programStart
+                      : toLocalDateKey(new Date()),
+                  )
+                }
+              >
+                Back to today <Icon name="arrow" size={14} />
+              </button>
             </div>
-            {message && saveState === "error" && <p className="inline-error">{message}</p>}
+            <div className="day-picker">
+              {dates.map((date, i) => {
+                const scheduled =
+                  workoutDays[getProgramDayIndex(store.programStart, date) - 1];
+                const isDone = store.logs[date]?.completed;
+                return (
+                  <button
+                    key={date}
+                    type="button"
+                    className={`day-pill ${selectedDate === date ? "selected" : ""} ${scheduled.strength ? "strength-day" : ""}`}
+                    onClick={() => chooseDate(date)}
+                    aria-pressed={selectedDate === date}
+                    aria-label={`${fullDate.format(parseDateKey(date))}: ${scheduled.title}`}
+                  >
+                    <span>{weekday.format(parseDateKey(date))}</span>
+                    <strong>{parseDateKey(date).getDate()}</strong>
+                    <small>
+                      {isDone ? (
+                        <Icon name="check" size={14} />
+                      ) : scheduled.strength ? (
+                        `SESSION ${scheduled.letter}`
+                      ) : i === 6 ? (
+                        "REST"
+                      ) : (
+                        "RECOVER"
+                      )}
+                    </small>
+                  </button>
+                );
+              })}
             </div>
-          </details>
+          </section>
+          <div className="training-grid">
+            <div>
+              <article className="session-panel" ref={sessionRef}>
+                <div className="session-header">
+                  <div>
+                    <div className="date-nav">
+                      <button
+                        type="button"
+                        aria-label="Previous day"
+                        disabled={selectedDate <= store.programStart}
+                        onClick={() => chooseDate(addDays(selectedDate, -1))}
+                      >
+                        ←
+                      </button>
+                      <span>{fullDate.format(parseDateKey(selectedDate))}</span>
+                      <button
+                        type="button"
+                        aria-label="Next day"
+                        onClick={() => chooseDate(addDays(selectedDate, 1))}
+                      >
+                        →
+                      </button>
+                    </div>
+                    <div className="session-title">
+                      <span
+                        className={`session-letter ${!day.strength ? "rest-letter" : ""}`}
+                      >
+                        {day.strength ? (
+                          day.letter
+                        ) : (
+                          <Icon name="reset" size={26} />
+                        )}
+                      </span>
+                      <div>
+                        <span className="eyebrow">
+                          {day.strength
+                            ? "FULL-BODY STRENGTH"
+                            : "RECOVERY IS PART OF THE PLAN"}
+                        </span>
+                        <h2>{day.title}</h2>
+                      </div>
+                    </div>
+                    <p className="session-description">{day.summary}</p>
+                  </div>
+                  {day.strength && (
+                    <div className="session-count">
+                      <strong>
+                        {completedExercises}
+                        <span>/{day.exercises.length}</span>
+                      </strong>
+                      <small>exercises done</small>
+                    </div>
+                  )}
+                </div>
+                <div className="session-meta">
+                  <span>
+                    <Icon name="clock" size={15} />
+                    {day.duration}
+                  </span>
+                  {day.strength && (
+                    <>
+                      <span>
+                        {week < 3 ? "3–4" : "2–3"} reps left in the tank
+                      </span>
+                      <span>
+                        {doneSets}/{totalSets} sets logged
+                      </span>
+                    </>
+                  )}
+                </div>
+                {day.strength && (
+                  <div className="session-progress">
+                    <span style={{ width: `${progress}%` }} />
+                  </div>
+                )}
+                {day.strength ? (
+                  <>
+                    <details className="warmup">
+                      <summary>
+                        <span>
+                          <span className="warmup-icon">↗</span>First, a little
+                          warm-up
+                        </span>
+                        <small>
+                          5–8 MIN <b>+</b>
+                        </small>
+                      </summary>
+                      <p>
+                        Walk or cycle easily for 5–8 minutes. Then do 1–2
+                        lighter practice sets for your first leg exercise and
+                        first upper-body exercise. These do not count as working
+                        sets.
+                      </p>
+                    </details>
+                    <div className="logging-note">
+                      Log one dumbbell’s weight, the machine’s displayed weight,
+                      or 0 for body weight. For each-side exercises, finish both
+                      sides before checking a set.
+                    </div>
+                    <div className="exercise-list">
+                      {day.exercises.map((exercise, i) => {
+                        const rows = rowsFor(exercise, i);
+                        const demo = demoFor(exercise.id);
+                        const previous = previousFor(exercise.id);
+                        const done = rows.every((row) => row.done);
+                        return (
+                          <article
+                            key={exercise.id}
+                            className={`exercise-card ${done ? "exercise-done" : ""}`}
+                          >
+                            <div className="exercise-top">
+                              <span className="exercise-number">
+                                {done ? (
+                                  <Icon name="check" size={19} />
+                                ) : (
+                                  String(i + 1).padStart(2, "0")
+                                )}
+                              </span>
+                              <div className="exercise-name">
+                                <span className="muscle-group">
+                                  {exercise.group}
+                                </span>
+                                <h3>{exercise.name}</h3>
+                                <span className="prescription">
+                                  {countFor(i)} sets <i>×</i> {exercise.reps}{" "}
+                                  {exercise.timed ? "sec" : "reps"}
+                                  {exercise.perSide ? " / side" : ""}
+                                </span>
+                              </div>
+                              {demo && (
+                                <a
+                                  className="demo-button"
+                                  href={demo.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label={`Watch ${exercise.name} demonstration`}
+                                >
+                                  <Icon name="play" size={15} />
+                                  <span>
+                                    {demo.durationSeconds
+                                      ? `${demo.durationSeconds}s demo`
+                                      : "Watch demo"}
+                                  </span>
+                                </a>
+                              )}
+                            </div>
+                            <p className="exercise-cue">{exercise.cue}</p>
+                            {demo?.note && (
+                              <p className="variant-note">
+                                Demo note: {demo.note}
+                              </p>
+                            )}
+                            <div className="set-table">
+                              <div className="set-labels">
+                                <span>SET</span>
+                                <span>WEIGHT · KG</span>
+                                <span>
+                                  {exercise.timed
+                                    ? "SECONDS"
+                                    : exercise.perSide
+                                      ? "REPS / SIDE"
+                                      : "REPS"}
+                                </span>
+                                <span>DONE</span>
+                              </div>
+                              {rows.map((row, rowIndex) => (
+                                <div
+                                  key={rowIndex}
+                                  className={`set-row ${row.done ? "set-done" : ""}`}
+                                >
+                                  <span className="set-index">
+                                    {rowIndex + 1}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    inputMode="decimal"
+                                    min="0"
+                                    max="999"
+                                    step="0.5"
+                                    placeholder="—"
+                                    aria-label={`${exercise.name} set ${rowIndex + 1} weight in kilograms`}
+                                    value={row.kg}
+                                    disabled={!loaded}
+                                    onChange={(event) => {
+                                      const value = event.target.value;
+                                      if (
+                                        value === "" ||
+                                        (Number(value) >= 0 &&
+                                          Number(value) <= 999)
+                                      )
+                                        updateSet(exercise, i, rowIndex, {
+                                          kg: value,
+                                        });
+                                    }}
+                                  />
+                                  <input
+                                    type="number"
+                                    inputMode="numeric"
+                                    min="0"
+                                    max="999"
+                                    step="1"
+                                    placeholder={exercise.reps.split("–")[0]}
+                                    aria-label={`${exercise.name} set ${rowIndex + 1} ${exercise.timed ? "seconds" : "repetitions"}`}
+                                    value={row.reps}
+                                    disabled={!loaded}
+                                    onChange={(event) => {
+                                      const value = event.target.value;
+                                      if (
+                                        value === "" ||
+                                        (Number.isInteger(Number(value)) &&
+                                          Number(value) >= 0 &&
+                                          Number(value) <= 999)
+                                      )
+                                        updateSet(exercise, i, rowIndex, {
+                                          reps: value,
+                                        });
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="set-check"
+                                    disabled={!loaded}
+                                    aria-label={`${row.done ? "Uncheck" : "Complete"} ${exercise.name} set ${rowIndex + 1}`}
+                                    aria-pressed={row.done}
+                                    onClick={() =>
+                                      updateSet(exercise, i, rowIndex, {
+                                        done: !row.done,
+                                      })
+                                    }
+                                  >
+                                    <Icon name="check" size={18} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="exercise-bottom">
+                              <span>
+                                {previous
+                                  ? `Last time · ${previous}`
+                                  : "Your first entry starts here"}
+                              </span>
+                              <button
+                                type="button"
+                                className="rest-link"
+                                onClick={() => startTimer(exercise.rest)}
+                              >
+                                <Icon name="clock" size={14} />
+                                Rest {exercise.rest}s
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="recovery-content">
+                    <span className="recovery-art">
+                      <Icon name="reset" size={54} />
+                    </span>
+                    <h3>Make room for the next good session.</h3>
+                    <p>{day.summary}</p>
+                    <div>
+                      <span>Move comfortably</span>
+                      <span>Eat normally</span>
+                      <span>Prioritise sleep</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() =>
+                        chooseDate(
+                          addDays(
+                            selectedDate,
+                            day.day === 2 || day.day === 4 || day.day === 7
+                              ? 1
+                              : 2,
+                          ),
+                        )
+                      }
+                    >
+                      See your next strength session{" "}
+                      <Icon name="arrow" size={17} />
+                    </button>
+                  </div>
+                )}
+                <div className="session-notes">
+                  <label htmlFor="session-notes">
+                    A note for next time <span>OPTIONAL</span>
+                  </label>
+                  <textarea
+                    id="session-notes"
+                    rows={3}
+                    maxLength={2000}
+                    placeholder="How did it feel? Machine settings, energy, anything to remember…"
+                    value={session?.notes ?? ""}
+                    disabled={!loaded}
+                    onChange={(event) =>
+                      changeSession((log) => ({
+                        ...log,
+                        notes: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="session-footer" data-no-export="true">
+                  <button
+                    type="button"
+                    className={`primary-button ${session?.completed ? "completed-button" : ""}`}
+                    disabled={!loaded}
+                    onClick={() =>
+                      changeSession((log) => ({
+                        ...log,
+                        completed: !log.completed,
+                      }))
+                    }
+                  >
+                    <Icon
+                      name={session?.completed ? "check" : "arrow"}
+                      size={18}
+                    />
+                    {session?.completed
+                      ? "Session saved as complete"
+                      : day.strength
+                        ? "Finish & save session"
+                        : "Log this recovery day"}
+                  </button>
+                  <span>
+                    {day.strength
+                      ? "Your effort counts. Every set needn’t be perfect."
+                      : "Recovery logging is optional."}
+                  </span>
+                </div>
+              </article>
+            </div>
+            <aside className="side-column">
+              <section className="timer-card">
+                <div className="card-kicker">
+                  <span>TAKE A BREATHER</span>
+                  <Icon name="clock" size={18} />
+                </div>
+                <h3>Rest. Then go again.</h3>
+                <div
+                  className={`timer-orbit ${running ? "timer-running" : ""}`}
+                  style={
+                    {
+                      "--timer-progress": `${(timerSeconds / timerDuration) * 360}deg`,
+                    } as React.CSSProperties
+                  }
+                >
+                  <div>
+                    <strong
+                      role="timer"
+                      aria-label={`${timerSeconds} seconds remaining`}
+                    >
+                      {formatTimer(timerSeconds)}
+                    </strong>
+                    <span>
+                      {timerFinished
+                        ? "READY WHEN YOU ARE"
+                        : running
+                          ? "BREATHE & RESET"
+                          : "REST TIMER"}
+                    </span>
+                  </div>
+                </div>
+                <div className="timer-presets">
+                  {[60, 90, 120].map((seconds) => (
+                    <button
+                      key={seconds}
+                      type="button"
+                      className={timerDuration === seconds ? "chosen" : ""}
+                      onClick={() => {
+                        setRunning(false);
+                        deadline.current = null;
+                        setTimerDuration(seconds);
+                        setTimerSeconds(seconds);
+                        setTimerFinished(false);
+                      }}
+                    >
+                      {seconds}s
+                    </button>
+                  ))}
+                </div>
+                <div className="timer-controls">
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={pauseTimer}
+                  >
+                    <Icon name={running ? "pause" : "play"} size={15} />
+                    {running
+                      ? "Pause"
+                      : timerSeconds < timerDuration && timerSeconds > 0
+                        ? "Resume"
+                        : "Start timer"}
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-button"
+                    aria-label="Reset rest timer"
+                    onClick={() => {
+                      setRunning(false);
+                      deadline.current = null;
+                      setTimerSeconds(timerDuration);
+                      setTimerFinished(false);
+                    }}
+                  >
+                    <Icon name="reset" />
+                  </button>
+                </div>
+                <span className="sr-only" role="status">
+                  {timerFinished
+                    ? "Rest finished. Start your next set when ready."
+                    : ""}
+                </span>
+              </section>
+              <section className="guidance-card">
+                <span className="eyebrow">WEEK {week} FOCUS</span>
+                <h3>{guidance.label}</h3>
+                <p>{guidance.guidance}</p>
+                <button type="button" onClick={() => setView("plan")}>
+                  See the whole plan <Icon name="arrow" size={16} />
+                </button>
+              </section>
+              <section className="downloads-card">
+                <span className="eyebrow">TAKE IT WITH YOU</span>
+                <button type="button" onClick={downloadPlan} disabled={busy}>
+                  <Icon name="download" size={17} />
+                  <span>
+                    {busy ? "Preparing download…" : "Download workout plan"}
+                    <small>3-page PDF · clickable demos</small>
+                  </span>
+                  <span>↗</span>
+                </button>
+                <button type="button" onClick={downloadImage} disabled={busy}>
+                  <Icon name="download" size={17} />
+                  <span>
+                    Save this session<small>Image for your phone</small>
+                  </span>
+                  <span>↗</span>
+                </button>
+              </section>
+              <div className="privacy-note">
+                <span className="privacy-dot" />
+                <p>
+                  {saveStatus}
+                  <small>
+                    Logs stay in this browser. Export a backup to move them to
+                    another device.
+                  </small>
+                </p>
+              </div>
+            </aside>
+          </div>
+        </>
+      )}
 
-          {day.strengthDay && (
-            <details className="minimum-card card">
-              <summary>Low-energy version <span>+</span></summary>
-              <p>Use this instead of today’s full strength session—not as extra work.</p>
-              <ol>
-                <li>1 set assisted pull-ups</li>
-                <li>1 set push-ups</li>
-                <li>1 set squats or split squats</li>
-                <li>10-minute brisk walk</li>
-              </ol>
-            </details>
-          )}
-        </aside>
-      </section>
-
-      <section className="rules-section">
-        <div className="section-heading">
-          <p className="kicker">PROGRESSION, WITHOUT THE NOISE</p>
-          <h2>One variable at a time.</h2>
-        </div>
-        <div className="rule-grid">
-          <article>
-            <span>01</span>
-            <h3>Own the range</h3>
-            <p>Keep the same setup and reach the top on every set, at the target effort, in two comparable sessions.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Then progress</h3>
-            <p>Use slightly less band assistance, a harder variation, or modest backpack load.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Do not stack changes</h3>
-            <p>Both sides must qualify. Change one thing, return to the lower end, and keep logging recovery.</p>
-          </article>
-        </div>
-        <div className="pain-rule">
-          <strong>Sharp, increasing, radiating, unstable, or joint-specific pain is a stop signal.</strong>
-          <p>
-            Regress or omit the exercise if position cannot be maintained, and do not replace it
-            with extra sets. Persistent symptoms, trauma, neurologic symptoms, chest pain, or
-            fainting require qualified assessment.
-          </p>
-        </div>
-      </section>
-
-      <section className="audit-section" id="audit">
-        <div className="audit-heading">
-          <p className="kicker">EVIDENCE + REAL-WORLD CHECK</p>
-          <h2>What was changed, and why.</h2>
-          <p>
-            This separates established guidance, our plan-level inference, and anecdotal user reports.
-            That distinction matters.
-          </p>
-        </div>
-        <div className="audit-grid">
-          <article className="audit-card strong">
-            <span className="audit-type">ESTABLISHED GUIDANCE</span>
-            <h3>Bands and bodyweight are valid resistance tools.</h3>
+      {view === "plan" && (
+        <section className="plan-view">
+          <div className="section-heading">
+            <span className="eyebrow">SIMPLE BY DESIGN</span>
+            <h2>Your plan, at a glance.</h2>
             <p>
-              ACSM’s 2026 review supports elastic bands, bodyweight, and home-based training.
-              It emphasizes training major muscle groups at least twice weekly and consistency over complexity.
+              Three full-body sessions with a different emphasis. Recovery days
+              between them.
             </p>
-          </article>
-          <article className="audit-card inference">
-            <span className="audit-type">OUR INFERENCE</span>
-            <h3>The pulling dose is deliberate, but it must be logged.</h3>
+          </div>
+          <div className="plan-session-grid">
+            {workoutDays
+              .filter((item) => item.strength)
+              .map((item) => (
+                <article key={item.day} className="plan-session">
+                  <span className="plan-day">
+                    {weekday
+                      .format(parseDateKey(addDays(weekStart, item.day - 1)))
+                      .toUpperCase()}
+                  </span>
+                  <div className="plan-session-title">
+                    <span>{item.letter}</span>
+                    <h3>{item.title}</h3>
+                  </div>
+                  <p>{item.focus}</p>
+                  <ul>
+                    {item.exercises.map((exercise) => (
+                      <li key={exercise.id}>
+                        {exercise.name}
+                        <span>
+                          {exercise.reps}
+                          {exercise.timed ? "s" : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => chooseDate(addDays(weekStart, item.day - 1))}
+                  >
+                    Open session {item.letter}
+                    <Icon name="arrow" size={16} />
+                  </button>
+                </article>
+              ))}
+          </div>
+          <div className="guide-grid">
+            <article className="guide-card">
+              <span className="eyebrow">01 / START COMFORTABLY</span>
+              <h3>Leave something in the tank.</h3>
+              <p>
+                In weeks 1–2, use two working sets and finish with 3–4 clean
+                repetitions left. From week 3, aim for 2–3 repetitions left. Use
+                a comfortable range and keep breathing.
+              </p>
+            </article>
+            <article className="guide-card">
+              <span className="eyebrow">02 / BUILD GRADUALLY</span>
+              <h3>Reps first. Then weight.</h3>
+              <p>
+                When every set reaches the top of its range with good control
+                and at least two repetitions left, use the smallest available
+                weight increase. Keep equipment settings consistent.
+              </p>
+            </article>
+            <article className="guide-card">
+              <span className="eyebrow">03 / RECOVER WELL</span>
+              <h3>Three good days are enough.</h3>
+              <p>
+                Keep a recovery day between lifting sessions. An optional fourth
+                day can be an easy walk or bike ride. Reduce the workload when
+                soreness or fatigue affects the next session.
+              </p>
+            </article>
+            <article className="guide-card">
+              <span className="eyebrow">04 / MOVE WITH CONTROL</span>
+              <h3>Comfort guides the range.</h3>
+              <p>
+                Keep your neck comfortable, control your knees at the top of leg
+                movements, and have a trainer check the hip hinge. Change or
+                stop movements that cause joint, neck or back pain.
+              </p>
+            </article>
+          </div>
+          <section className="settings-card">
+            <div>
+              <span className="eyebrow">MAKE IT YOUR BLOCK</span>
+              <h3>Program settings</h3>
+              <p>
+                Changing your start date anchors the A / recovery / B / recovery
+                / C rhythm to that day. The default starts on Saturday.
+              </p>
+            </div>
+            <label className="start-date-label">
+              Program starts
+              <input
+                type="date"
+                aria-label="Program start date"
+                value={store.programStart}
+                onChange={(event) => {
+                  try {
+                    parseDateKey(event.target.value);
+                    setStore((current) => ({
+                      ...current,
+                      programStart: event.target.value,
+                    }));
+                    setSelectedDate(event.target.value);
+                  } catch {}
+                }}
+              />
+            </label>
+            <label className="extra-set-label">
+              <input
+                type="checkbox"
+                checked={store.extraSet}
+                onChange={(event) =>
+                  setStore((current) => ({
+                    ...current,
+                    extraSet: event.target.checked,
+                  }))
+                }
+              />
+              <span>
+                Add a third set when ready
+                <small>
+                  First 3 exercises only, from week 3. Enable this when recovery
+                  is good.
+                </small>
+              </span>
+            </label>
+          </section>
+          <details className="health-note">
+            <summary>
+              Training notes & sources <span>+</span>
+            </summary>
             <p>
-              Monday strength sets, Wednesday assisted volume, Friday technique singles, and ring
-              rows serve different purposes. Their value depends on full-ROM logs and joint recovery.
+              This is a starting training plan, not medical clearance or a
+              diagnosis from a body scan. Follow existing medical advice and
+              seek assessment for unresolved exercise restrictions. Stop
+              exercise and get urgent help for chest pain, fainting or unusual
+              breathlessness.
             </p>
-          </article>
-          <article className="audit-card anecdote">
-            <span className="audit-type">AUTHENTIC ANECDOTES</span>
-            <h3>Band versus negative pull-ups is not settled by reviews.</h3>
             <p>
-              Community reports conflict: some users credit negatives, others bands, and several describe
-              forearm or elbow problems after negatives. These are genuine experiences, not controlled evidence.
+              The six-week block ends with a review rather than automatically
+              restarting. Frequency and volume can be adjusted as your recovery
+              and strength develop.
             </p>
-          </article>
-          <article className="audit-card changed">
-            <span className="audit-type">PROGRAM CHANGE</span>
-            <h3>Coverage expanded without turning every day into bodybuilding.</h3>
-            <p>
-              The six-week block adds structured dip and pike progressions, ring rows, knee-flexion
-              hamstring work, face pulls, lateral delts, arms, calves, tibialis work, and functional
-              core training. Sunday remains complete rest.
-            </p>
-          </article>
-        </div>
-
-        <div className="source-list">
-          <div>
-            <span>01</span>
             <a
               href="https://acsm.org/resistance-training-guidelines-update-2026/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
-              ACSM 2026 resistance-training position stand summary
+              ACSM resistance-training guidance ↗
             </a>
-            <em>Current evidence synthesis</em>
-          </div>
-          <div>
-            <span>02</span>
             <a
-              href="https://www.who.int/news-room/fact-sheets/detail/physical-activity"
+              href="https://pubmed.ncbi.nlm.nih.gov/38595233/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
-              WHO physical activity fact sheet
+              Split versus full-body training review ↗
             </a>
-            <em>Current public-health target</em>
-          </div>
-          <div>
-            <span>03</span>
-            <a
-              href="https://www.reddit.com/r/bodyweightfitness/comments/1b327xj/routine_for_pullups/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              2024 pull-up progression discussion
-            </a>
-            <em>Anecdotal, mixed experience</em>
-          </div>
-          <div>
-            <span>04</span>
-            <a
-              href="https://www.reddit.com/r/bodyweightfitness/comments/jdqigi/i_did_my_first_pullup_today_dont_use_banded/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Bands versus negatives discussion
-            </a>
-            <em>Anecdotal, includes adverse experiences</em>
-          </div>
-        </div>
+          </details>
+        </section>
+      )}
 
-        <div className="truth-note">
-          <strong>No authentic reviews exist for this exact plan.</strong>
-          <p>
-            It is a bespoke, unpublished program. Claims that “real users reviewed this plan” would be invented.
-            The assessment above compares its ingredients and dosage with current guidance and openly identified
-            community reports.
-          </p>
-        </div>
-      </section>
-
-      <footer>
-        <div>
-          <Image
-            className="brand-logo footer-brand-logo"
-            src={assetPath("/workin-logo-footer.svg")}
-            alt="Workin"
-            width={58}
-            height={47}
-            unoptimized
-          />
-          <p>Workin · A practical six-week block. Not medical care or individualized coaching.</p>
-        </div>
-        <a href="#today">Back to today ↑</a>
-      </footer>
-
-      <section className="workout-export-stage" aria-hidden="true">
-        <article className="workout-export-card" ref={exportCardRef}>
-          <header className="export-header">
-            <div className="export-brand">
-              <Image
-                className="export-brand-logo"
-                src={assetPath("/workin-logo.svg")}
-                alt="Workin"
-                width={78}
-                height={63}
-                unoptimized
-              />
+      {view === "history" && (
+        <section className="history-view">
+          <div className="section-heading">
+            <span className="eyebrow">YOUR WORK ADDS UP</span>
+            <h2>A record of showing up.</h2>
+            <p>
+              Completed strength sessions, with your weights, repetitions and
+              notes.
+            </p>
+          </div>
+          {history.length ? (
+            <div className="history-list">
+              {history.map(([date, log]) => {
+                const item = workoutDays[log.day - 1];
+                const sets = Object.values(log.sets)
+                  .flat()
+                  .filter((row) => row.done).length;
+                return (
+                  <button
+                    type="button"
+                    key={date}
+                    className="history-row"
+                    onClick={() => chooseDate(date)}
+                  >
+                    <span className="history-letter">{item.letter}</span>
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>
+                        {fullDate.format(parseDateKey(date))} · {sets} sets
+                        checked
+                      </small>
+                      {log.notes && <em>{log.notes}</em>}
+                    </span>
+                    <Icon name="arrow" />
+                  </button>
+                );
+              })}
             </div>
-            <p>6-week calisthenics block</p>
-          </header>
-
-          <div className="export-hero">
-            <p>DAY {day.day} · WEEK {cycleWeek}</p>
-            <h2>{day.title}</h2>
-            <span>{selectedDateLabel}</span>
-          </div>
-
-          <div className="export-meta">
-            <span>{day.duration}</span>
-            <span>{displayedIntensity}</span>
-            <span>{guidance.label}</span>
-          </div>
-
-          <div className="export-exercises">
-            {activeExercises.map((exercise, index) => (
-              <section className="export-exercise" key={exercise.id}>
-                <span className="export-number">{String(index + 1).padStart(2, "0")}</span>
-                <div>
-                  <div className="export-exercise-title">
-                    <h3>{exercise.name}</h3>
-                    {exercise.optional && <span>OPTIONAL</span>}
-                  </div>
-                  <strong>{exercise.prescription}</strong>
-                  <p>{exercise.cue}</p>
-                </div>
-              </section>
-            ))}
-          </div>
-
-          <footer className="export-footer">
-            <strong>Move well. Leave 1–3 good reps in reserve.</strong>
-            <span>WORKIN · {selectedDate}</span>
-          </footer>
-        </article>
-      </section>
-
-      <section className="weekly-pdf-export-stage" ref={weeklyPdfRef} aria-hidden="true">
-        {workoutDays.map((weeklyDay, index) => {
-          const scheduledDate = weekDates[index] ?? "";
-          const scheduledExercises = getExercisesForWeek(
-            weeklyDay.exercises,
-            cycleWeek,
-            scheduledDate,
-          ).filter(
-            (exercise) => !exercise.startsAfter || scheduledDate > exercise.startsAfter,
-          );
-          const weeklyIntensity =
-            cycleWeek === 6 && weeklyDay.strengthDay
-              ? "Leave about 3 reps in reserve"
-              : weeklyDay.intensity;
-          const scheduledDateLabel = scheduledDate
-            ? fullDateFormatter.format(parseDateKey(scheduledDate))
-            : `Day ${weeklyDay.day}`;
-
-          return (
-            <article
-              className={`weekly-pdf-page ${scheduledExercises.length >= 9 ? "is-dense" : ""}`}
-              data-weekly-pdf-page
-              key={weeklyDay.day}
-            >
-              <header className="weekly-pdf-header">
-                <div className="weekly-pdf-brand">
-                  <Image
-                    className="weekly-pdf-brand-logo"
-                    src={assetPath("/workin-logo.svg")}
-                    alt="Workin"
-                    width={62}
-                    height={50}
-                    unoptimized
-                  />
-                  <small>Complete weekly workout</small>
-                </div>
-                <p>WEEK {cycleWeek} / 6</p>
-              </header>
-
-              <div className="weekly-pdf-hero">
-                <div>
-                  <p>DAY {weeklyDay.day}</p>
-                  <h2>{pdfText(weeklyDay.title)}</h2>
-                  <span>{pdfText(scheduledDateLabel)}</span>
-                </div>
-                <strong>{String(weeklyDay.day).padStart(2, "0")}</strong>
-              </div>
-
-              <p className="weekly-pdf-summary">{pdfText(weeklyDay.summary)}</p>
-
-              <div className="weekly-pdf-meta">
-                <span>{pdfText(weeklyDay.duration)}</span>
-                <span>{pdfText(weeklyIntensity)}</span>
-                <span>{pdfText(guidance.label)}</span>
-              </div>
-
-              <div className="weekly-pdf-exercises">
-                {scheduledExercises.map((exercise, exerciseIndex) => (
-                  <section className="weekly-pdf-exercise" key={exercise.id}>
-                    <span>{String(exerciseIndex + 1).padStart(2, "0")}</span>
-                    <div>
-                      <div>
-                        <h3>{pdfText(exercise.name)}</h3>
-                        {exercise.optional && <small>OPTIONAL</small>}
-                      </div>
-                      <strong>{pdfText(exercise.prescription)}</strong>
-                      <p>{pdfText(exercise.cue)}</p>
-                    </div>
-                  </section>
-                ))}
-              </div>
-
-              <footer className="weekly-pdf-footer">
-                <strong>Move well. Leave 1-3 good reps in reserve.</strong>
-                <span>WORKIN · PAGE {index + 1} / 7</span>
-              </footer>
-            </article>
-          );
-        })}
-      </section>
-
-      <details className="plan-guide" id="guide">
-        <summary>Plan guide <span>+</span></summary>
-        <div className="guide-grid">
-          <p><strong>Progress:</strong> {planRules.progression}</p>
-          <p><strong>Aerobic:</strong> {planRules.moderateAerobic}</p>
-          <p><strong>Safety:</strong> {planRules.safety}</p>
-        </div>
-      </details>
-
-      <section className={`timer-dock ${timerRunning ? "running" : ""}`} aria-label="Rest timer">
-        <div
-          className="timer-orbit"
-          style={{ "--timer-progress": `${timerProgress}deg` } as React.CSSProperties}
-        >
-          <div className="timer-readout">
-            <span>REST</span>
-            <strong>{formatTimer(remaining)}</strong>
-          </div>
-        </div>
-        <div className="timer-tools">
-          <div className="timer-presets" aria-label="Timer presets">
-            {[60, 90, 120].map((seconds) => (
+          ) : (
+            <div className="empty-history">
+              <Icon name="chart" size={48} />
+              <h3>Your next chapter starts with one session.</h3>
+              <p>
+                Finish your first workout and it will appear here. Every
+                session’s inputs are also saved while you train.
+              </p>
               <button
                 type="button"
-                key={seconds}
-                className={timerDuration === seconds ? "selected" : ""}
-                onClick={() => {
-                  setTimerDuration(seconds);
-                  setRemaining(seconds);
-                  setTimerRunning(false);
-                  setTimerNotice("");
-                }}
+                className="primary-button"
+                onClick={() => setView("today")}
               >
-                {seconds}s
+                Go to your workout <Icon name="arrow" size={17} />
               </button>
-            ))}
+            </div>
+          )}
+          <div className="backup-card">
+            <div>
+              <h3>Keep your progress with you.</h3>
+              <p>
+                Download a backup to keep or import on another device. Importing
+                adds missing dates and keeps your existing entries.
+              </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={backup}
+              >
+                <Icon name="download" size={16} />
+                Export backup
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => backupRef.current?.click()}
+              >
+                Import backup
+              </button>
+              <input
+                ref={backupRef}
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                aria-label="Import workout backup"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void restore(file);
+                  event.target.value = "";
+                }}
+              />
+            </div>
           </div>
-          <div className="timer-actions">
-            <button
-              className="timer-control"
-              type="button"
-              onClick={() => {
-                if (remaining === 0) setRemaining(timerDuration);
-                setTimerRunning((current) => !current);
-                setTimerNotice("");
-              }}
-            >
-              {timerRunning ? "Pause" : remaining === 0 ? "Again" : "Start"}
-            </button>
-            <button
-              className="timer-reset"
-              type="button"
-              onClick={() => {
-                setTimerRunning(false);
-                setRemaining(timerDuration);
-                setTimerNotice("");
-              }}
-              aria-label="Reset timer"
-            >
-              ↺
-            </button>
-          </div>
+        </section>
+      )}
+      {notice && (
+        <div className="notice" role="status">
+          <span>{notice}</span>
+          <button
+            type="button"
+            aria-label="Dismiss notification"
+            onClick={() => setNotice("")}
+          >
+            ×
+          </button>
         </div>
-        <span className="sr-only" aria-live="assertive">{timerNotice}</span>
-      </section>
+      )}
+      <footer>
+        <a
+          href="#top"
+          className="footer-wordmark"
+          onClick={() => setView("today")}
+        >
+          WorkIn<span>GYM</span>
+        </a>
+        <p>Show up. Move well. Build slowly.</p>
+        <span>Made for the long run.</span>
+      </footer>
+      {view === "today" && (
+        <div className="mobile-timer">
+          <span>
+            <Icon name="clock" size={17} />
+            <strong>{formatTimer(timerSeconds)}</strong>
+            <small>
+              {timerFinished
+                ? "Rest finished"
+                : running
+                  ? "Resting"
+                  : "Rest timer"}
+            </small>
+          </span>
+          <button type="button" onClick={pauseTimer}>
+            {running ? "Pause" : "Start"}
+          </button>
+          <button
+            type="button"
+            aria-label="Reset mobile rest timer"
+            onClick={() => {
+              setRunning(false);
+              deadline.current = null;
+              setTimerSeconds(timerDuration);
+              setTimerFinished(false);
+            }}
+          >
+            <Icon name="reset" size={17} />
+          </button>
+        </div>
+      )}
     </main>
   );
 }

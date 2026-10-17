@@ -1,8 +1,6 @@
-name: Deploy Workin to GitHub Pages
+name: Deploy WorkInGYM to GitHub Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -32,7 +30,7 @@ jobs:
 
       - name: Build static site
         env:
-          NEXT_PUBLIC_BASE_PATH: /Workin
+          NEXT_PUBLIC_BASE_PATH: /WorkInGYM
         run: npm run build
 
       - name: Upload Pages artifact
